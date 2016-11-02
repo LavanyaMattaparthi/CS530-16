@@ -51,6 +51,27 @@
                               'Please reload the page and allow your browser to detect your location' :
                               'Your browser doesn\'t support geolocation.');
       }
+	  function detectmylocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            //infoWindow.setPosition(pos);
+            //infoWindow.setContent('You are Here!');
+			marker = new google.maps.Marker ({
+			   position: pos,
+			   map:map
+			   //draggable: true
+			});
+            map.setCenter(pos);
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+        }
+	  }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js">
     </script>
