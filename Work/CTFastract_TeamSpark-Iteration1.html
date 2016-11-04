@@ -31,7 +31,6 @@
   <body onload="initMap()">
 	<div id="header">
 		From: <input type="text" id="source" size="50" placeholder="Type Your Address">
-		To: <input type="text" id="destination" size="50" placeholder="Type Destination"><br>
 		<input type="button" value="Detect my location" onclick="detectmylocation()">
 	</div>
     <div id="map"></div>
@@ -39,11 +38,36 @@
 	  var map, marker, marker2;
       function initMap() {
 	    map = new google.maps.Map(document.getElementById('map'), {
-	      center: {lat: 41.763710, lng: -72.685097},
 	      zoom: 14
 	    });
+
+	//Logic to locate current location when loading page
+	var infoWindow = new google.maps.InfoWindow({map:map});
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+	var markerCurrentLocation = new google.maps.Marker({
+		position: new google.maps.LatLng(pos),
+		map:map,
+		title: "Your current location...!!! "
+	
+	});
+
+        infoWindow.setPosition(pos);
+        infoWindow.setContent("Your current location...!!!");
+        map.setCenter(pos);
+        }, function() {
+           handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation <!-- ?callback=initMap -->
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+
 		marker = new google.maps.Marker ({
-		   position: {lat: 41.763710, lng: -72.685097},
 		   map:map
 		   //draggable: true
 		});
@@ -60,33 +84,17 @@
 		     map.fitBounds(bounds);
 		     map.setZoom(14);
 		});
-		var searchBox2 = new google.maps.places.SearchBox(document.getElementById('destination'));
-		 marker2 = new google.maps.Marker ({
-		   position: {lat: 41.763710, lng: -72.685097},
-		   map:map
-		   //draggable: true
-		 });
-		google.maps.event.addListener(searchBox2, 'places_changed', function() {
-		     var places = searchBox2.getPlaces();
-		     var bounds = new google.maps.LatLngBounds();
-		     var i, place;		
-		     for (i=0; place=places[i];i++){
-		          bounds.extend(place.geometry.location);
-		          marker2.setPosition(place.geometry.location);
-		     }
-		     map.fitBounds(bounds);
-		     map.setZoom(12);
-		});
       }
 	  function detectmylocation() {
+	var infoWindow = new google.maps.InfoWindow({map:map});
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
             var pos = {
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
-            //infoWindow.setPosition(pos);
-            //infoWindow.setContent('You are Here!');
+              infoWindow.setPosition(pos);
+              infoWindow.setContent('You location!');
 			marker = new google.maps.Marker ({
 			   position: pos,
 			   map:map
@@ -99,7 +107,7 @@
         }
 	  }
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlzdh1K44xS_e79VyMYbtfpCN11x9WRSg&libraries=places">
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places">
     </script>
   </body>
 </html>
