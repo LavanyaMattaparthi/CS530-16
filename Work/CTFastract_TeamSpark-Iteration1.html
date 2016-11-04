@@ -1,1 +1,113 @@
-Delivery code here....
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      #map {
+        height: 90%;
+      }
+      #header {
+        height: 10%;
+		margin-top:10px;
+		margin-left:20px;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      input[type="text"] {
+		padding: 8px;
+		border: solid 1px #dcdcdc;
+		border-radius:10px;
+	  }
+      input[type="button"] {
+		padding: 2px;
+		border: outset 1px #00f;
+	  }
+
+    </style>
+  </head>
+  <body onload="initMap()">
+	<div id="header">
+		From: <input type="text" id="source" size="50" placeholder="Type Your Address">
+		<input type="button" value="Detect my location" onclick="detectmylocation()">
+	</div>
+    <div id="map"></div>
+    <script>
+	  var map, marker, marker2;
+      function initMap() {
+	    map = new google.maps.Map(document.getElementById('map'), {
+	      center: {lat: 41.6933, lng: 72.7642},
+	      zoom: 14
+	    });
+	
+	//Logic to locate current location when loading page
+	var infoWindow = new google.maps.InfoWindow({map:map});
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+	var markerCurrentLocation = new google.maps.Marker({
+		position: new google.maps.LatLng(pos),
+		map:map,
+		title: "Your current location...!!! "
+	
+	});
+
+    infoWindow.setPosition(pos);
+    infoWindow.setContent("Your current location...!!!");
+        map.setCenter(pos);
+        }, function() {
+           handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation <!-- ?callback=initMap -->
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+
+
+		marker = new google.maps.Marker ({
+		   map:map
+		});
+		var searchBox = new google.maps.places.SearchBox(document.getElementById('source'));
+		google.maps.event.addListener(searchBox, 'places_changed', function() {
+		     var places = searchBox.getPlaces();
+		     var bounds = new google.maps.LatLngBounds();
+		     var i, place;
+		
+		     for (i=0; place=places[i];i++){
+		          bounds.extend(place.geometry.location);
+		          marker.setPosition(place.geometry.location);
+		     }
+		     map.fitBounds(bounds);
+		     map.setZoom(14);
+		});
+      }
+
+
+function detectmylocation() {
+    if (navigator.geolocation) {
+    	navigator.geolocation.getCurrentPosition(function(position) {
+    		var pos = {
+       			lat: position.coords.latitude,
+       			lng: position.coords.longitude
+    		};
+			marker = new google.maps.Marker ({
+	   			position: pos,
+	   			map:map
+			});
+    		map.setCenter(pos);
+      		}, function() {
+            	handleLocationError(true, infoWindow, map.getCenter());
+          });
+        }
+	  }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places">
+    </script>
+  </body>
+</html>
