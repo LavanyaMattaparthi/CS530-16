@@ -14,7 +14,7 @@
 		margin-left:20px;
       }
       html, body {
-        height: 100%;
+        height: 95%;
         margin: 0;
         padding: 0;
       }
@@ -51,6 +51,9 @@
               lng: position.coords.longitude
             };
 
+	// Code to locate nearby bus stops
+	nearbusstations(pos)
+
 	var markerCurrentLocation = new google.maps.Marker({
 		position: new google.maps.LatLng(pos),
 		map:map,
@@ -85,14 +88,45 @@
 		     map.setZoom(14);
 		});
       }
-	  function detectmylocation() {
-	var infoWindow = new google.maps.InfoWindow({map:map});
+
+function nearbusstations(pos) {
+  var SearchLoc = new google.maps.LatLng(pos);
+
+
+  // Specify location, radius and place types for your Places API search.
+  var request = {
+    location: SearchLoc,
+    radius: '300',
+    types: ['bus_station']
+  };
+
+  var service = new google.maps.places.PlacesService(map);
+  service.nearbySearch(request, function(results, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      for (var i = 0; i < results.length; i++) {
+        var place = results[i];
+	var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+
+        var markerbus = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+	icon: image
+        });
+      }
+    }
+  });
+}
+
+  function detectmylocation() {
+
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
             var pos = {
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
+
+	var infoWindow = new google.maps.InfoWindow({map:map});
               infoWindow.setPosition(pos);
               infoWindow.setContent('You location!');
 			marker = new google.maps.Marker ({
