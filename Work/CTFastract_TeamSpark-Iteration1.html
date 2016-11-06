@@ -33,7 +33,8 @@
 	<H1>CTFastrack - <i>TeamSpark</i></H1>
 	<div id="header">
 		<font face="Calibri" size=4> Source: </font> 
-		<input type="text" id="source" size="50" placeholder="Search source address">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<!--Modified Search window to be type as Search box type- This allows user to close the current search and get back to current location-->
+		<input type="search" id="source" size="50" placeholder="Search source address">
 		<input type="button" value="Detect my location" onclick="detectmylocation()">
 	</div>
     <div id="map"></div>
@@ -50,18 +51,19 @@
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
-
+	
+	
 	// Code to locate nearby bus stops
 	nearbusstations(pos)
-
 	var markerCurrentLocation = new google.maps.Marker({
 		position: new google.maps.LatLng(pos),
 		map:map,
-		title: "Your current location...!!! "	
+		title: "Your current location!!! "	
 	});
+	
 	var infoWindow = new google.maps.InfoWindow({map:map});
         infoWindow.setPosition(pos);
-        infoWindow.setContent("Your current location...!!!");
+        infoWindow.setContent("Your current location!!!");
         map.setCenter(pos);
         }, function() {
            handleLocationError(true, infoWindow, map.getCenter());
@@ -79,34 +81,37 @@
 		     var places = searchBox.getPlaces();
 		     var bounds = new google.maps.LatLngBounds();
 		     var i, place;
-		
+
+
+<!-- 			// Code to locate nearby bus stops
+	//nearbusstations(place.geometry.location); -->
 		     for (i=0; place=places[i];i++){
 		          bounds.extend(place.geometry.location);
 		          marker.setPosition(place.geometry.location);
 		     }
 		     map.fitBounds(bounds);
 		     map.setZoom(14);
+			 
+
+
+
+
 		});
       }
-
 function nearbusstations(pos) {
   var SearchLoc = new google.maps.LatLng(pos);
-
-
   // Specify location, radius and place types for your Places API search.
   var request = {
     location: SearchLoc,
-    radius: '300',
+    radius: '400',
     types: ['bus_station']
   };
-
   var service = new google.maps.places.PlacesService(map);
   service.nearbySearch(request, function(results, status) {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
       for (var i = 0; i < results.length; i++) {
         var place = results[i];
 	var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
-
         var markerbus = new google.maps.Marker({
           map: map,
           position: place.geometry.location,
@@ -116,17 +121,16 @@ function nearbusstations(pos) {
     }
   });
 }
-
   function detectmylocation() {
-
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
             var pos = {
               lat: position.coords.latitude,
               lng: position.coords.longitude
             };
-
-	var infoWindow = new google.maps.InfoWindow({map:map});
+			
+	var infoWindow = new google.maps.InfoWindow({map:map});	
+              infoWindow.close(); //Close the previous infoWindow	
               infoWindow.setPosition(pos);
               infoWindow.setContent('You location!');
 			marker = new google.maps.Marker ({
@@ -145,3 +149,4 @@ function nearbusstations(pos) {
     </script>
   </body>
 </html>
+
