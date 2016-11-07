@@ -28,7 +28,7 @@ li a:hover {
 }
 </style>
 <ul>
-    <li class="active" ><a href="#"><font size="6">CTFastrack <i> - TeamSpark</i></font></a></li>
+    <li class="active" ><a href="#"><font size="6">CTFastrack <i>- TeamSpark</i></font></a></li>
     <font size="5"><li><a href="#">Home</a></li>
     <li><a href="#">Bus Schedule</a></li>
     <li><a href="#">Trip Planner</a></li>
@@ -70,12 +70,12 @@ li a:hover {
 	<div id="header">
 		<font face="Calibri" size=4> Source: </font> 
 		<!--Modified Search window to be type as Search box type- This allows user to close the current search and get back to current location-->
-		<input type="search" id="source" size="50" placeholder="Search source address"> &nbsp;&nbsp;
+		<input type="search" id="source" size="50" placeholder="Search source address">
 		<input type="button" value="Detect my location" onclick="detectmylocation()">
 	</div>
     <div id="map"></div>
     <script>
-	  var map, marker, marker2, markerbus;
+	  var map, marker, marker2;
       function initMap() {
 	    map = new google.maps.Map(document.getElementById('map'), {
 	      zoom: 14
@@ -91,7 +91,6 @@ li a:hover {
 	
 	// Code to locate nearby bus stops
 	nearbusstations(pos)
-	
 	var markerCurrentLocation = new google.maps.Marker({
 		position: new google.maps.LatLng(pos),
 		map:map,
@@ -118,15 +117,14 @@ li a:hover {
 		     var places = searchBox.getPlaces();
 		     var bounds = new google.maps.LatLngBounds();
 		     var i, place;
+
 		     for (i=0; place=places[i];i++){
 		          bounds.extend(place.geometry.location);
 		          marker.setPosition(place.geometry.location);
-			    var searchedpos = {
-		              lat: place.geometry.location.lat(),
-		              lng: place.geometry.location.lng()
-		            };
-			// Code to locate nearby bus stops
-			markerbus.setMap(null);
+	    		  var searchedpos = {
+                               lat: place.geometry.location.lat(),
+                               lng: place.geometry.location.lng()
+                           };
 			nearbusstations(searchedpos);
 		     }
 		     map.fitBounds(bounds);
@@ -134,7 +132,6 @@ li a:hover {
 			 
 		});
       }
-
 function nearbusstations(pos) {
   var SearchLoc = new google.maps.LatLng(pos);
   // Specify location, radius and place types for your Places API search.
@@ -149,7 +146,7 @@ function nearbusstations(pos) {
       for (var i = 0; i < results.length; i++) {
         var place = results[i];
 	var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
-        markerbus = new google.maps.Marker({
+        var markerbus = new google.maps.Marker({
           map: map,
           position: place.geometry.location,
 	icon: image
@@ -158,7 +155,6 @@ function nearbusstations(pos) {
     }
   });
 }
-
   function detectmylocation() {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
