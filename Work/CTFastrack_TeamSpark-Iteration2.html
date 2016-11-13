@@ -66,11 +66,11 @@ li a:hover {
 		<a id="source-link" href="#">Get my position</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="button" value="Locate my location on map" onclick="detectmylocation()">
 		<br>
-		<font face="Calibri" size=4> Destination:&nbsp; </font> 
+		<font face="Calibri" size=4> Destination: </font> 
 		<input type="search" id="destination" size="50" placeholder="Search destination address">
 		<a id="destination-link" href="#">Get my position</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<input type="button" value="Show route and get distance" onclick="getdistance()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<font size=5><span id="sDistance"></span> &nbsp;&nbsp;
+		<font size=5><span id="sDistance"></span>&nbsp;&nbsp;
 		<span id="sDuration"></span></font>
 	</div>
     <div id="map"></div>
@@ -240,14 +240,11 @@ function getdistance() {
   var iDistance = google.maps.geometry.spherical.computeDistanceBetween(posSource, posDestination); // Distance between Source and Destination
   iDistance = Math.round(iDistance/1609.344 * 100.0)/100.0;
   document.getElementById("sDistance").textContent=" Distance: "+iDistance + " miles"; // output distance to the page
-
-  getDuration(posSource, posDestination); // display travel time
-
+  getDuration(posSource, posDestination); // display travel time 
   var directionsService = new google.maps.DirectionsService;
   var directionsDisplay = new google.maps.DirectionsRenderer({ map: map });
   calculateAndDisplayRoute(directionsService, directionsDisplay, posSource, posDestination); // display route
 }
-
 function getDuration(pointS, pointD) {
    var directionsService = new google.maps.DirectionsService();
    var request = {
@@ -262,7 +259,6 @@ function getDuration(pointS, pointD) {
     }
    } );
 }
-
 function calculateAndDisplayRoute(directionsService, directionsDisplay, pointA, pointB) {
   directionsService.route({
     origin: pointA,
