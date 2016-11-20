@@ -78,6 +78,7 @@ li a:hover {
 	  var map, markerSource, markerDestination;
 	  var bluemarkers = []; /* Array of blue markers. We're indexing blue markers because we need to remove 
 							them in each new search before adding new ones */
+	  var directionsDisplay;
       function initMap() {
 	    map = new google.maps.Map(document.getElementById('map'), {
 	      zoom: 14
@@ -241,8 +242,13 @@ function getdistance() {
   iDistance = Math.round(iDistance/1609.344 * 100.0)/100.0;
   document.getElementById("sDistance").textContent=" Distance: "+iDistance + " miles"; // output distance to the page
   getDuration(posSource, posDestination); // display travel time 
+
+  if (directionsDisplay != null) {
+      directionsDisplay.setMap(null);
+      directionsDisplay = null;
+  }
   var directionsService = new google.maps.DirectionsService;
-  var directionsDisplay = new google.maps.DirectionsRenderer({ map: map });
+  directionsDisplay = new google.maps.DirectionsRenderer({ map: map });
   calculateAndDisplayRoute(directionsService, directionsDisplay, posSource, posDestination); // display route
 }
 function getDuration(pointS, pointD) {
