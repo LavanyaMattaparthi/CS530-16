@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en-US"><head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1,user-scalable=yes"/>
+	<title>${title}</title>
+	<meta name="application-name" content="${title} | t-time"/>
+	<meta name="description" content="time tables generated from a GTFS formatted feed"/>
+	<meta http-equiv="Date" content="${generationDate}"/>
+	<meta http-equiv="Last-Modified" content="${generationDate}"/>
+	<link rel="stylesheet" href="t-time.css" />
+</head><body>
+<main>
+${html}
+	<form id="dateForm" class="hide">
+		<fieldset>
+			<label for="dateSelector">Full schedule</label>
+			<input id="dateSelector" name="dateSelector" type="date" placeholder="2016-12-24" pattern="\d\d\d\d-\d\d-\d\d" />
+			<button type="submit">Show</button>
+		</fieldset>
+		<section></section>
+	</form>
+</main><script>
+${javascript}
+Object.freeze(dates);
+Object.freeze(routes);
+const activeRows=5;
+const forEach=Array.prototype.forEach;
+let referenceDate=null;
+let updateTimerID=null;
+document.addEventListener("DOMContentLoaded",function(){
+	"use strict";
+	forEach.call(document.querySelectorAll("input[name=line]"),function(e){
+		e.addEventListener("change",function(e){
+			deleteAllChildren(document.querySelector("form>section"));
+			updateActiveSchedules(e);
+			resetSelector(referenceDate);
+		});
+	});
+	if(updateActiveSchedules()){
+		resetSelector(referenceDate);
+	}
+	updateTimerID=window.setInterval(updateActiveSchedules,60000);
+});
+document.getElementById('dateForm').addEventListener("submit",function(e){
+	"use strict";
+	e.preventDefault();
+	const ds=document.getElementById('dateSelector');
+	const dsv=new Date(ds.value);
+	updateStaticSchedules(new Date(dsv.getTime()+(dsv.getTimezoneOffset()*60000)));
+});
+// will be called repeatedly to update times
+function updateActiveSchedules(event){
+	"use strict";
+	const radiobutton=document.querySelector("input[name='line']:checked");
+	if(null==radiobutton){return false;}
+	const currentRouteTables=document.getElementById(radiobutton.value);
+	if(null==currentRouteTables){return false;}
+	const nowDate=new Date();
+	if(null==referenceDate||nowDate.getDate()!=referenceDate.getDate()){
+		// new day, so update times and unhide all tables
+		setStopTimesForDay(nowDate);
+		forEach.call(document.getElementsByTagName("table"),function(table){
+			table.classList.remove("hide");
+			table.classList.remove("predicted");
+		});
+	}
+	referenceDate=nowDate;
+	let scheds=dates[prettyFormatDate(referenceDate)];
+	const predictedSchedule=null==scheds;
+	if(predictedSchedule){
+		scheds=dates[referenceDate.getDay()];
+	}
+	const route=routes[currentRouteTables.id];
+	const newMillis=referenceDate.getTime();
+	forEach.call(currentRouteTables.getElementsByTagName("table"),function(table){
+		const name=table.caption.textContent;
+		if(predictedSchedule){
+			table.classList.add("predicted");
+		}
+		const thead=deleteAllChildren(table.tHead);
+		const tbody=deleteAllChildren(table.tBodies.item(0));
+		const stopinfo=route["stops"][name];
+		const stoptimes={}
+		forEach.call(stopinfo,function(stopname){
+			const headelement=document.createElement("th");
+			headelement.textContent=stopname[0];
+			headelement.dataset["stopid"]=stopname[1];
+			thead.appendChild(headelement);
+			stoptimes[stopname[0]]=[];
+		});
+		Object.freeze(stoptimes);
+		const stopnames=getStopNames(stopinfo);
+		let timesExist=false;
+		forEach.call(Object.keys(route["schedules"]),function(schedulename){
+			if(-1<scheds.indexOf(schedulename)&&name in route["schedules"][schedulename]){
+				forEach.call(route["schedules"][schedulename][name],function(trip){
+					forEach.call(trip,function(stopobj){
+						if(null==stopobj){return;}
+						const idx=stopnames.indexOf(stopobj["name"]);
+						if(-1<idx){
+							const sdt=stopobj["datetime"].getTime();
+							const ssn=stoptimes[stopobj["name"]];
+							if(newMillis<sdt&&-1==ssn.indexOf(sdt)){
+								ssn.push(sdt);
+								timesExist=true;
+							}
+						}
+					});
+					forEach.call(Object.keys(stoptimes),function(stopname){
+						stoptimes[stopname].sort(function(a,b){
+							return "string"==typeof(a)? 1: "string"==typeof(b)? -1: a-b;
+						});
+					});
+				});
+			}
+		});
+		if(timesExist){
+			let count=activeRows;
+			while(count--){
+				const row=tbody.insertRow();
+				forEach.call(stopnames,function(stopname){
+					const stoptime=stoptimes[stopname].shift();
+					createTimeCell(null==stoptime?"":stoptime,row);
+				});
+			};
+		}else{
+			// there are no schedules for today; hide the table
+			if(0==tbody.childNodes.length){
+				table.classList.add("hide");
+			}
+		}
+	});
+	return true;
+}
+function updateStaticSchedules(forDate){
+	"use strict";
+	referenceDate=forDate;
+	let scheds=dates[prettyFormatDate(forDate)];
+	const predictedSchedule=null==scheds;
+	if(predictedSchedule){
+		scheds=dates[forDate.getDay()];
+	}
+	setStopTimesForDay(forDate);
+	const selectedRoute=document.querySelector("input[name='line']:checked").value;
+	const route=routes[selectedRoute];
+	const staticSchedules=deleteAllChildren(document.querySelector("form>section"));
+	forEach.call(document.getElementById(selectedRoute).getElementsByTagName("table"),function(destinationtable){
+		const destination=destinationtable.caption.textContent;
+		const table=createTable(destination,predictedSchedule?["predicted"]:[]);
+		let timesExist=false;
+		forEach.call(Object.keys(route["schedules"]),function(schedulename){
+			if(-1<scheds.indexOf(schedulename)&&destination in route["schedules"][schedulename]){
+				const thead=table.createTHead();
+				const tbody=table.tBodies.item(0);
+				const stopinfo=route["stops"][destination];
+				forEach.call(stopinfo,function(stopname){
+					const headelement=document.createElement("th");
+					headelement.textContent=stopname[0];
+					headelement.dataset["stopid"]=stopname[1];
+					thead.appendChild(headelement);
+				});
+				const stopnames=getStopNames(stopinfo);
+				forEach.call(route["schedules"][schedulename][destination],function(trip){
+					const times=new Array(stopnames.length);
+					times.fill("");
+					forEach.call(trip,function(stopobj){
+						if(null==stopobj){return;}
+						const idx=stopnames.indexOf(stopobj["name"]);
+						if(-1<idx){
+							times[idx]=stopobj.datetime.getTime();
+						}
+					});
+					const row=tbody.insertRow();
+					forEach.call(times,createTimeCell,row);
+				});
+				timesExist=timesExist||0!=tbody.childNodes.length;
+			}
+		});
+		if(timesExist){
+			staticSchedules.appendChild(table);
+		}
+	});
+	referenceDate=null;
+}
+function resetSelector(dateObj){
+	"use strict";
+	document.getElementById('dateForm').classList.remove("hide");
+	const ds=document.getElementById('dateSelector');
+	ds.placeholder=prettyFormatDate(dateObj);
+	ds.value=prettyFormatDate(dateObj);
+}
+function deleteAllChildren(element){
+	"use strict";
+	while(element.firstChild){
+		element.removeChild(element.firstChild);
+	}
+	return element;
+}
+function prettyFormatDate(forDate){
+	"use strict";
+	return forDate.getFullYear()+"-"+(("00"+(forDate.getMonth()+1)).slice(-2))+"-"+("00"+forDate.getDate()).slice(-2);
+}
+function cloneDateWithTimeString(dateobj,timestr){
+	"use strict";
+	const parts=timestr.split(":");
+	return new Date(dateobj.getFullYear(),dateobj.getMonth(),dateobj.getDate(),new Number(parts[0]),new Number(parts[1]));
+}
+function getStopNames(stopinfo){
+	"use strict";
+	return Object.freeze(stopinfo.map(function(val){
+		return val[0];
+	}));
+}
+function createTable(caption,classNames){
+	"use strict";
+	const table=document.createElement("table");
+	table.createCaption().textContent=caption;
+	forEach.call(classNames,function(classname){table.classList.add(classname);});
+	table.insertRow();
+	table.deleteRow(-1);
+	return table;
+}
+function setStopTimesForDay(theDay){
+	"use strict";
+	forEach.call(Object.keys(routes),function(route){
+		forEach.call(Object.keys(routes[route]["schedules"]),function(schedulename){
+			forEach.call(Object.keys(routes[route]["schedules"][schedulename]),function(direction){
+				forEach.call(routes[route]["schedules"][schedulename][direction],function(trip){
+					forEach.call(trip,function(stopobj){
+						if("string"==typeof(stopobj)){
+							// initialize stop object
+							const idx=trip.indexOf(stopobj);
+							trip[idx]=new Stop(stopobj,cloneDateWithTimeString(theDay,stopobj),routes[route]["stops"][direction][idx][0]);
+						}else if(null!=stopobj){
+							stopobj.datetime=cloneDateWithTimeString(theDay,stopobj["time"]);
+						}
+					});
+				});
+			});
+		});
+	});
+}
+function Stop(time,datetime,stopname){
+	"use strict";
+	this.time=time;
+	this.datetime=datetime;
+	this.name=stopname;
+}
+function createTimeCell(time,altthis){
+	"use strict";
+	const td=typeof(altthis)=="number"?this.insertCell():altthis.insertCell();
+	if("number"==typeof(time)){ // Date millis
+		const timeobj=new Date(time);
+		td.classList.add("countdown"+Math.trunc((timeobj.getTime()-referenceDate.getTime())/60000));
+		let hours=timeobj.getHours();
+		if(_12hourClock){
+			td.classList.add(hours>11?"pm":"am");
+			if(hours>12){
+				hours-=12;
+			}
+		}
+		if(0==hours){
+			hours=_12hourClock?12:24;
+		}
+		td.textContent=hours+":"+("00"+timeobj.getMinutes()).slice(-2);
+	}
+	return td;
+}
+</script></body></html>
