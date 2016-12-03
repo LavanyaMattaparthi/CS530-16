@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <meta charset="utf-8">
-	    <Title>CTFastrack - TeamSpark - Iteration 1</Title>
+   
+   <head>
+      <script src = "https://maps.googleapis.com/maps/api/js"></script>
+      <script src="busschedule/utils.js"></script>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    	<meta charset="utf-8">
+	    <Title>CTFastrack - TeamSpark</Title>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-	
- <style>
+   <style>
 ul {
     list-style-type: none;
     margin: 0;
@@ -27,18 +29,17 @@ li a {
 li a:hover {
     background-color: #111;
 }
-</style>
+</style>   
 <ul>
     <li class="active" ><a href="#"><font size="6">CTFastrack <i>- TeamSpark</i></font></a></li>
     <font size="5"><li><a href="#">Home</a></li>
-    <li><a href="#">Bus Schedule</a></li>
+    <li><a href="busschedule/Bus-Schedule.html">Bus Schedule</a></li>
     <li><a href="#">Trip Planner</a></li>
     <li><a href="#">Contact us</a></li>
 	</font>
 	
   </ul>
-
-  <br>
+ <br>
 
 	
     <style>
@@ -55,10 +56,145 @@ li a:hover {
         margin: 0;
         padding: 0;
       }
+
+
     </style>
-  </head>
-  <body onload="initMap()">
-	
+
+<script>
+var image = {
+	url: 'busschedule/Bus_25.png',
+	// This marker is 40 pixels wide by 50 pixels high.
+	size: new google.maps.Size(40, 50),
+	// The origin for this image is (0, 0).
+	origin: new google.maps.Point(0, 0),
+	anchor: new google.maps.Point(0, 0)
+}
+
+var map;
+function loadMap() {
+            var mapOptions = {
+               center:new google.maps.LatLng(41.8014374, -72.75011),
+               zoom:12,
+               mapTypeId:google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("sample"),mapOptions);
+			startGettingBussesInfo();
+}
+google.maps.event.addDomListener(window, 'load', loadMap);
+
+
+
+function startGettingBussesInfo()
+{
+   var interval = setInterval(getBussesInformation,5000);	
+}
+		 
+
+
+function getBussesInformation()
+{
+		url="http://65.213.12.244/realtimefeed/vehicle/vehiclepositions.json";//+ new Date().getTime();
+		var success = function(response){
+			//log(response);
+
+			addAndUpdateBusses(JSON.parse(response));
+
+		}; 
+
+		var error = function()
+		{
+		   log('Error');
+		};
+
+		var startTime = new Date().getTime();
+		HttpClient.Get(url,success,error);
+}
+
+markers = [];
+function addAndUpdateBusses(data)
+{
+	    var Busses = data.entity;
+	    clearMarkers();
+		markers = [];
+		for(d=0;d<Busses.length;d++)
+		{
+			bus_id = Busses[d].vehicle.trip.route_id;
+ 			if (bus_id == 8473 || bus_id == 8474 || bus_id == 8476 || bus_id == 8477 || bus_id == 8478 || bus_id == 8479 || bus_id == 8649 || bus_id == 8650 || bus_id == 8529 || bus_id == 8530 || bus_id == 8531 || bus_id == 8534 
+			    || bus_id == 8641 || bus_id == 8642 || bus_id == 8645 || bus_id == 8646 || bus_id == 8647 || bus_id == 8648 || bus_id == 8480 || bus_id == 8481 || bus_id == 8698 || bus_id == 8699 || bus_id == 8700 || bus_id == 8703)
+			{
+		    
+				var vehicle_position = 	Busses[d].vehicle.position;
+	            		var myLatLng = new google.maps.LatLng(vehicle_position.latitude, vehicle_position.longitude); //or wherever you want the marker placed
+			    	var Marker = new google.maps.Marker({ position: myLatLng, map: map,icon: image,}); 
+			
+				Marker.set("v_id", Busses[d].vehicle.vehicle.id);
+				Marker.set("v_label", Busses[d].vehicle.trip.route_id);
+				Marker.set("route_id", Busses[d].id);
+				var busLL = new google.maps.LatLng(Busses[d].vehicle.position.latitude, Busses[d].vehicle.position.longitude);
+				Marker.set("v_pos", busLL);
+
+				google.maps.event.addListener(Marker, 'click', function() {
+			
+				if(this.v_label ==  8473 ) {this.route_id = 101;}
+				if(this.v_label ==  8474 ) {this.route_id = 102;}
+				if(this.v_label ==  8476 ) {this.route_id = 121;}
+				if(this.v_label ==  8477 ) {this.route_id = 128;}
+				if(this.v_label ==  8478 ) {this.route_id = 140;}
+				if(this.v_label ==  8479 ) {this.route_id = 144;}
+				if(this.v_label ==  8649 ) {this.route_id = 153;}
+				if(this.v_label ==  8650 ) {this.route_id = 161;}
+				if(this.v_label ==  8529 ) {this.route_id = 923;}
+				if(this.v_label ==  8530 ) {this.route_id = 924;}
+				if(this.v_label ==  8531 ) {this.route_id = 925;}
+				if(this.v_label ==  8534 ) {this.route_id = 928;}
+				if(this.v_label ==  8641 ) {this.route_id = 101;}
+				if(this.v_label ==  8642 ) {this.route_id = 102;}
+				if(this.v_label ==  8645 ) {this.route_id = 121;}
+				if(this.v_label ==  8646 ) {this.route_id = 128;}
+				if(this.v_label ==  8647 ) {this.route_id = 140;}
+				if(this.v_label ==  8648 ) {this.route_id = 144;}
+				if(this.v_label ==  8480 ) {this.route_id = 153;}
+				if(this.v_label ==  8481 ) {this.route_id = 161;}
+				if(this.v_label ==  8698 ) {this.route_id = 923;}
+				if(this.v_label ==  8699 ) {this.route_id = 924;}
+				if(this.v_label ==  8700 ) {this.route_id = 925;}
+				if(this.v_label ==  8703 ) {this.route_id = 928;}
+				
+					alert( "Route_id: "+this.route_id);
+				
+				//var infoWindow = new google.maps.InfoWindow({map:map});
+        
+                                      // infoWindow.setPosition(v_pos);
+        
+                                       //infoWindow.setContent("Your current location!!!");
+				
+				});
+			} // Restricting only to CT Fastrack buses
+			markers.push(Marker);
+		}
+
+		showMarkers();
+}
+
+function showMarkers() {
+ setMapOnAll(map);
+}
+function clearMarkers() {
+ setMapOnAll(null);
+}
+
+function setMapOnAll(map) {
+  for (var i = 0; i < markers.length; i++) {
+    markers[i].setMap(map);
+  }
+}
+
+
+      </script>
+      
+   </head>
+   
+   <body style="margin:0px" onload="initMap()">
 	<div id="header">
 		<font face="Calibri" size=4> Source:  </font><font size=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>
 		<!--Modified Search window to be type as Search box type- This allows user to close the current search and get back to current location-->
@@ -72,17 +208,20 @@ li a:hover {
 		<input type="button" value="Show route and get distance" onclick="getdistance()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		<font size=5><span id="sDistance"></span>&nbsp;&nbsp;
 		<span id="sDuration"></span></font>
+
 	</div>
-    <div id="map"></div>
-    <script>
+      <div id = "sample" style = "position:absolute;width:100%; height:100%;"></div>
+<script>
 	  var map, markerSource, markerDestination;
+
+
 	  var bluemarkers = []; /* Array of blue markers. We're indexing blue markers because we need to remove 
 							them in each new search before adding new ones */
 	  var directionsDisplay;
       function initMap() {
-	    map = new google.maps.Map(document.getElementById('map'), {
-	      zoom: 14
-	    });
+	    //map = new google.maps.Map(document.getElementById('map'), {
+	   //   zoom: 14
+	  //  });
 	  //Logic to locate current location when loading page
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
@@ -194,7 +333,7 @@ function nearbusstations(pos) {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
       for (var i = 0; i < results.length; i++) {
         var place = results[i];
-		var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+	var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
         var markerbus = new google.maps.Marker({
           map: map,
           position: place.geometry.location,
@@ -242,7 +381,6 @@ function getdistance() {
   iDistance = Math.round(iDistance/1609.344 * 100.0)/100.0;
   document.getElementById("sDistance").textContent=" Distance: "+iDistance + " miles"; // output distance to the page
   getDuration(posSource, posDestination); // display travel time 
-
   if (directionsDisplay != null) {
       directionsDisplay.setMap(null);
       directionsDisplay = null;
@@ -277,8 +415,11 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, pointA, 
     }
   });
 }
+
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry">
+	<script src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry">
     </script>
-	<!-- note: geometry library added. it is necessary for knowing the travel distance -->
-  </body>
+
+   </body>
+   
+</html>
