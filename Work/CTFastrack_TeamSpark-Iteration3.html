@@ -222,6 +222,44 @@ function setMapOnAll(map) {
 	    //map = new google.maps.Map(document.getElementById('map'), {
 	   //   zoom: 14
 	  //  });
+	    geocoder = new google.maps.Geocoder();
+
+	    directionsDisplay = new google.maps.DirectionsRenderer();
+	    directionsService = new google.maps.DirectionsService();
+
+          //Define CTFastrak boundary
+	    polygonCoords = [
+                          { lat: 41.806523, lng: -72.751854 },
+                          { lat: 41.806523, lng: -72.586373 },
+                          { lat: 41.726378, lng: -72.590493 },
+                          { lat: 41.616617, lng: -72.754944 },
+                          { lat: 41.645357, lng: -72.869614 },
+                          { lat: 41.750716, lng: -72.853821 },
+                          { lat: 41.806523, lng: -72.751854 }
+	    ];
+	    fastrakPolygon = new google.maps.Polygon({ paths: polygonCoords });
+	    google.maps.event.addListener(map, 'click', function (event) { console.log(google.maps.geometry.poly.containsLocation(event.latLng, fastrakPolygon)); });
+
+          //Load CTFastrak routes, parking, and multi-use trail access points
+	    ctfastrak = new google.maps.KmlLayer({
+	        map: map,
+	        url: 'https://drive.google.com/uc?export=download&id=0BzSh5RLL0GhUTUhmWDNCb1pXblk',
+	        preserveViewport: true,
+	        suppressInfoWindows: true
+	    }); 
+
+          //Display CTFastrak KML attributes in 'content-window' div
+	    ctfastrak.addListener('click', function (kmlEvent) {
+	        document.getElementById('content-header').innerHTML = ""
+	        var text = kmlEvent.featureData.name + '<br>' + kmlEvent.featureData.description;
+	        showInContentWindow(text);
+	    });
+
+          //Send html to 'content-window' div
+	    function showInContentWindow(text) {
+	        var contentWindow = document.getElementById('content-content')
+	        contentWindow.innerHTML = text;
+	    };
 	  //Logic to locate current location when loading page
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
