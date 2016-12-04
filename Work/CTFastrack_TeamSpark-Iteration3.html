@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+   
    <head>
       <script src = "https://maps.googleapis.com/maps/api/js"></script>
       <script src="busschedule/utils.js"></script>
@@ -39,6 +40,8 @@ li a:hover {
 	
   </ul>
  <br>
+
+	
     <style>
       #map {
         height: 90%;
@@ -53,8 +56,6 @@ li a:hover {
         margin: 0;
         padding: 0;
       }
-
-
     </style>
 
 <script>
@@ -66,7 +67,6 @@ var image = {
 	origin: new google.maps.Point(0, 0),
 	anchor: new google.maps.Point(0, 0)
 }
-
 var map;
 function loadMap() {
             var mapOptions = {
@@ -78,35 +78,25 @@ function loadMap() {
 			startGettingBussesInfo();
 }
 google.maps.event.addDomListener(window, 'load', loadMap);
-
-
-
 function startGettingBussesInfo()
 {
    var interval = setInterval(getBussesInformation,5000);	
 }
 		 
-
-
 function getBussesInformation()
 {
-		url="http://65.213.12.244/realtimefeed/vehicle/vehiclepositions.json";
+		url="http://65.213.12.244/realtimefeed/vehicle/vehiclepositions.json";//+ new Date().getTime();
 		var success = function(response){
 			//log(response);
-
 			addAndUpdateBusses(JSON.parse(response));
-
 		}; 
-
 		var error = function()
 		{
 		   log('Error');
 		};
-
 		var startTime = new Date().getTime();
 		HttpClient.Get(url,success,error);
 }
-
 markers = [];
 function addAndUpdateBusses(data)
 {
@@ -129,7 +119,6 @@ function addAndUpdateBusses(data)
 				Marker.set("route_id", Busses[d].id);
 				var busLL = new google.maps.LatLng(Busses[d].vehicle.position.latitude, Busses[d].vehicle.position.longitude);
 				Marker.set("v_pos", busLL);
-
 				google.maps.event.addListener(Marker, 'click', function() {
 			
 				if(this.v_label ==  8473 ) {this.route_id = 101;}
@@ -169,24 +158,19 @@ function addAndUpdateBusses(data)
 			} // Restricting only to CT Fastrack buses
 			markers.push(Marker);
 		}
-
 		showMarkers();
 }
-
 function showMarkers() {
  setMapOnAll(map);
 }
 function clearMarkers() {
  setMapOnAll(null);
 }
-
 function setMapOnAll(map) {
   for (var i = 0; i < markers.length; i++) {
     markers[i].setMap(map);
   }
 }
-
-
       </script>
       
    </head>
@@ -210,8 +194,6 @@ function setMapOnAll(map) {
       <div id = "sample" style = "position:absolute;width:100%; height:100%;"></div>
 <script>
 	  var map, markerSource, markerDestination;
-
-
 	  var bluemarkers = []; /* Array of blue markers. We're indexing blue markers because we need to remove 
 							them in each new search before adding new ones */
 	  var directionsDisplay;
@@ -219,44 +201,6 @@ function setMapOnAll(map) {
 	    //map = new google.maps.Map(document.getElementById('map'), {
 	   //   zoom: 14
 	  //  });
-	    geocoder = new google.maps.Geocoder();
-
-	    directionsDisplay = new google.maps.DirectionsRenderer();
-	    directionsService = new google.maps.DirectionsService();
-
-          //Define CTFastrak boundary
-	    polygonCoords = [
-                          { lat: 41.806523, lng: -72.751854 },
-                          { lat: 41.806523, lng: -72.586373 },
-                          { lat: 41.726378, lng: -72.590493 },
-                          { lat: 41.616617, lng: -72.754944 },
-                          { lat: 41.645357, lng: -72.869614 },
-                          { lat: 41.750716, lng: -72.853821 },
-                          { lat: 41.806523, lng: -72.751854 }
-	    ];
-	    fastrakPolygon = new google.maps.Polygon({ paths: polygonCoords });
-	    google.maps.event.addListener(map, 'click', function (event) { console.log(google.maps.geometry.poly.containsLocation(event.latLng, fastrakPolygon)); });
-
-          //Load CTFastrak routes, parking, and multi-use trail access points
-	    ctfastrak = new google.maps.KmlLayer({
-	        map: map,
-	        url: 'https://drive.google.com/uc?export=download&id=0BzSh5RLL0GhUTUhmWDNCb1pXblk',
-	        preserveViewport: true,
-	        suppressInfoWindows: true
-	    }); 
-
-          //Display CTFastrak KML attributes in 'content-window' div
-	    ctfastrak.addListener('click', function (kmlEvent) {
-	        document.getElementById('content-header').innerHTML = ""
-	        var text = kmlEvent.featureData.name + '<br>' + kmlEvent.featureData.description;
-	        showInContentWindow(text);
-	    });
-
-          //Send html to 'content-window' div
-	    function showInContentWindow(text) {
-	        var contentWindow = document.getElementById('content-content')
-	        contentWindow.innerHTML = text;
-	    };
 	  //Logic to locate current location when loading page
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(function(position) {
@@ -450,7 +394,6 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, pointA, 
     }
   });
 }
-
     </script>
 	<script src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry">
     </script>
