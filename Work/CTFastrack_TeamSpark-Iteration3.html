@@ -196,14 +196,26 @@ function setMapOnAll(map) {
 		<font face="Calibri" size=4> Source:  </font><font size=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>
 		<!--Modified Search window to be type as Search box type- This allows user to close the current search and get back to current location-->
 		<input type="search" id="source" size="50" placeholder="Search source address">
-		<a id="source-link" href="#">Get my position</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="button" value="Locate my location on map" onclick="detectmylocation()">
+		<a id="source-link" href="#"><font face="Calibri" size=2>Get my position</font></a>&nbsp;&nbsp;
+		<input type="button" value="Locate my location on map" onclick="detectmylocation()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<font face="Calibri" size=4> Select Route: </font> 
+		<select id="RouteSelected" onchange="showStops()">
+		    <option value="-1">Select route</option>
+		    <option value="101">101</option> 
+		    <option value="102">102</option>
+		    <option value="121">121</option>
+		    <option value="128">128</option>
+		    <option value="140">140</option>
+		    <option value="144">144</option>
+		    <option value="153">153</option>
+		    <option value="161">161</option>
+		</select>
 		<br>
 		<font face="Calibri" size=4> Destination: </font> 
 		<input type="search" id="destination" size="50" placeholder="Search destination address">
-		<a id="destination-link" href="#">Get my position</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<a id="destination-link" href="#"><font face="Calibri" size=2>Get my position</font></a>&nbsp;&nbsp;
 		<input type="button" value="Show route and get distance" onclick="getdistance()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		<font size=5><span id="sDistance"></span>&nbsp;&nbsp;
+		<font size=5><span id="sDistance"></span>
 		<span id="sDuration"></span></font>
 
 	</div>
@@ -247,17 +259,18 @@ function setMapOnAll(map) {
 
           //Display CTFastrak KML attributes in 'content-window' div
 	    ctfastrak.addListener('click', function (kmlEvent) {
-		var text =  kmlEvent.featureData.name.substring(9, 6);
+		var RouteClicked =  kmlEvent.featureData.name.substring(9, 6);
+		document.getElementById("sDuration").textContent = "";
 		document.getElementById("sDistance").textContent = kmlEvent.featureData.name;
 		
-		if (text == 101) {path101();}
-		if (text == 102) {path102();}
-		if (text == 121) {path121();}
-		if (text == 128) {path128();}
-		if (text == 140) {path140();}
-		if (text == 144) {path144();}
-		if (text == 153) {path153();}
-		if (text == 161) {path161();}
+		if (RouteClicked == 101) {path101();}
+		if (RouteClicked == 102) {path102();}
+		if (RouteClicked == 121) {path121();}
+		if (RouteClicked == 128) {path128();}
+		if (RouteClicked == 140) {path140();}
+		if (RouteClicked == 144) {path144();}
+		if (RouteClicked == 153) {path153();}
+		if (RouteClicked == 161) {path161();}
 	    });
 
 	  //Logic to locate current location when loading page
@@ -470,6 +483,7 @@ new google.maps.LatLng(41.761139,-72.563426)],
     strokeOpacity: 1.0,
     strokeWeight: 2
   });
+	//routePath.setMap(map);
     busstops(routePath);
 }
 
@@ -642,6 +656,8 @@ new google.maps.LatLng(41.799576,-72.748992),
 new google.maps.LatLng(41.800604,-72.749609),
 new google.maps.LatLng(41.801811,-72.750153),
 new google.maps.LatLng(41.803313,-72.750636),
+new google.maps.LatLng(41.813472,-72.745873),
+new google.maps.LatLng(41.808529,-72.745503),
 new google.maps.LatLng(41.801659,-72.737063),
 new google.maps.LatLng(41.79469,-72.716917),
 new google.maps.LatLng(41.796677,-72.720513),
@@ -661,12 +677,44 @@ new google.maps.LatLng(41.81728,-72.722118),
 new google.maps.LatLng(41.817385,-72.719427),
 new google.maps.LatLng(41.817848,-72.717535),
 new google.maps.LatLng(41.816852,-72.713099)],
-    strokeColor: '#FF0000',
+    strokeColor: '#0BA9CC',
     strokeOpacity: 1.0,
-    strokeWeight: 2
+    strokeWeight: 5
+  });
+    //routePath.setMap(map);
+    busstops(routePath);
+    path153_1();
+}
+
+function path153_1(){
+var routePath = new google.maps.Polyline({
+    path: [
+new google.maps.LatLng(41.803313,-72.750636),
+new google.maps.LatLng(41.801659,-72.737063),
+new google.maps.LatLng(41.79469,-72.716917),
+new google.maps.LatLng(41.796677,-72.720513),
+new google.maps.LatLng(41.801811,-72.725329),
+new google.maps.LatLng(41.804441,-72.727556),
+new google.maps.LatLng(41.806364,-72.729238),
+new google.maps.LatLng(41.807535,-72.730255),
+new google.maps.LatLng(41.80944,-72.731949),
+new google.maps.LatLng(41.812267,-72.73454),
+new google.maps.LatLng(41.814646,-72.737034),
+new google.maps.LatLng(41.816684,-72.73794),
+new google.maps.LatLng(41.816789,-72.734521),
+new google.maps.LatLng(41.816956,-72.730217),
+new google.maps.LatLng(41.817141,-72.72675),
+new google.maps.LatLng(41.817193,-72.725586),
+new google.maps.LatLng(41.81728,-72.722118),
+new google.maps.LatLng(41.817385,-72.719427),
+new google.maps.LatLng(41.817848,-72.717535),
+new google.maps.LatLng(41.816852,-72.713099)],
+    strokeColor: '#0BA9CC',
+    strokeOpacity: 1.0,
+    strokeWeight: 5
   });
     routePath.setMap(map);
-    busstops(routePath);
+    //busstops(routePath);
 }
 
 function path161(){
@@ -729,6 +777,20 @@ function setStopsMapOnAll(map) {
   }
 }
 
+function showStops(){
+	document.getElementById("sDuration").textContent = "";
+	RouteSelected = document.getElementById("RouteSelected").value;
+ if (RouteSelected > 0){
+	if (RouteSelected == 101) {path101();document.getElementById("sDistance").textContent = "Route 101 via CTfastrak Guideway";}
+	if (RouteSelected == 102) {path102();document.getElementById("sDistance").textContent = "Route 102 - Hartford/New Britain-Bristol";}
+	if (RouteSelected == 121) {path121();document.getElementById("sDistance").textContent = "Route 121 - MCC/Hartford/UConn Health";}
+	if (RouteSelected == 128) {path128();document.getElementById("sDistance").textContent = "Route 128 - Hartford/Westfarms-New Britain via Stanley";}
+	if (RouteSelected == 140) {path140();document.getElementById("sDistance").textContent = "Route 140 - CCSU SHUTTLE";}
+	if (RouteSelected == 144) {path144();document.getElementById("sDistance").textContent = "Route 144 - Wethersfield/Westfarms via Newington ";}
+	if (RouteSelected == 153) {path153();document.getElementById("sDistance").textContent = "Route 153 - Flatbush/Copaco via West Hartford Center ";}
+	if (RouteSelected == 161) {path161();document.getElementById("sDistance").textContent = "Route 161 - St. Francis Hospital/Hartford Hospital";}
+  } else {clearstopMarkers();}
+}
 
 //Lavanya - End
 
@@ -792,14 +854,14 @@ function getdistance() {
   var posDestination = new google.maps.LatLng(destinationLat, destinationLng);  // Destination LatLng
   var iDistance = google.maps.geometry.spherical.computeDistanceBetween(posSource, posDestination); // Distance between Source and Destination
   iDistance = Math.round(iDistance/1609.344 * 100.0)/100.0;
-  document.getElementById("sDistance").textContent=" Distance: "+iDistance + " miles"; // output distance to the page
+  document.getElementById("sDistance").textContent="Travel Distance: "+iDistance+" miles &"; // output distance to the page
   getDuration(posSource, posDestination); // display travel time 
   if (directionsDisplay != null) {
       directionsDisplay.setMap(null);
       directionsDisplay = null;
   }
   var directionsService = new google.maps.DirectionsService;
-  directionsDisplay = new google.maps.DirectionsRenderer({ map: map });
+  directionsDisplay = new google.maps.DirectionsRenderer({ map: map, polylineOptions: {strokeColor: "#FF0000"}});
   calculateAndDisplayRoute(directionsService, directionsDisplay, posSource, posDestination); // display route
 }
 function getDuration(pointS, pointD) {
@@ -811,7 +873,7 @@ function getDuration(pointS, pointD) {
     };
     directionsService.route( request, function( response, status ) {
     if ( status === 'OK' ) {
-        document.getElementById("sDuration").textContent="Time: "+response.routes[ 0 ].legs[ 0 ].duration.text;
+        document.getElementById("sDuration").textContent="Travel Time: "+response.routes[ 0 ].legs[ 0 ].duration.text;
     }
    } );
 }
