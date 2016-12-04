@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-   
    <head>
       <script src = "https://maps.googleapis.com/maps/api/js"></script>
       <script src="busschedule/utils.js"></script>
@@ -40,8 +39,6 @@ li a:hover {
 	
   </ul>
  <br>
-
-	
     <style>
       #map {
         height: 90%;
@@ -93,7 +90,7 @@ function startGettingBussesInfo()
 
 function getBussesInformation()
 {
-		url="http://65.213.12.244/realtimefeed/vehicle/vehiclepositions.json";//+ new Date().getTime();
+		url="http://65.213.12.244/realtimefeed/vehicle/vehiclepositions.json";
 		var success = function(response){
 			//log(response);
 
