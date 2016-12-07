@@ -122,7 +122,35 @@ function addAndUpdateBusses(data)
 		    
 				var vehicle_position = 	Busses[d].vehicle.position;
 	            		var myLatLng = new google.maps.LatLng(vehicle_position.latitude, vehicle_position.longitude); //or wherever you want the marker placed
-			    	var Marker = new google.maps.Marker({ position: myLatLng, map: map,icon: image,}); 
+				var type = Busses[d].vehicle.trip.route_id;
+				var one = "1";
+
+				if(type   ==  8473 ) {type   = "101";}
+				if(type   ==  8474 ) {type   = "102";}
+				if(type   ==  8476 ) {type   = "121";}
+				if(type   ==  8477 ) {type   = "128";}
+				if(type   ==  8478 ) {type   = "140";}
+				if(type   ==  8479 ) {type   = "144";}
+				if(type   ==  8649 ) {type   = "153";}
+				if(type   ==  8650 ) {type   = "161";}
+				if(type   ==  8529 ) {type   = "923";}
+				if(type   ==  8530 ) {type   = "924";}
+				if(type   ==  8531 ) {type   = "925";}
+				if(type   ==  8534 ) {type   = "928";}
+				if(type   ==  8641 ) {type   = "101";}
+				if(type   ==  8642 ) {type   = "102";}
+				if(type   ==  8645 ) {type   = "121";}
+				if(type   ==  8646 ) {type   = "128";}
+				if(type   ==  8647 ) {type   = "140";}
+				if(type   ==  8648 ) {type   = "144";}
+				if(type   ==  8480 ) {type   = "153";}
+				if(type   ==  8481 ) {type   = "161";}
+				if(type   ==  8698 ) {type   = "923";}
+				if(type   ==  8699 ) {type   = "924";}
+				if(type   ==  8700 ) {type   = "925";}
+				if(type   ==  8703 ) {type   = "928";}
+
+			    	var Marker = new google.maps.Marker({ position: myLatLng, map: map,label: type,icon: image,}); 
 			
 				Marker.set("v_id", Busses[d].vehicle.vehicle.id);
 				Marker.set("v_label", Busses[d].vehicle.trip.route_id);
@@ -132,38 +160,35 @@ function addAndUpdateBusses(data)
 
 				google.maps.event.addListener(Marker, 'click', function() {
 			
-				if(this.v_label ==  8473 ) {this.route_id = 101;}
-				if(this.v_label ==  8474 ) {this.route_id = 102;}
-				if(this.v_label ==  8476 ) {this.route_id = 121;}
-				if(this.v_label ==  8477 ) {this.route_id = 128;}
-				if(this.v_label ==  8478 ) {this.route_id = 140;}
-				if(this.v_label ==  8479 ) {this.route_id = 144;}
-				if(this.v_label ==  8649 ) {this.route_id = 153;}
-				if(this.v_label ==  8650 ) {this.route_id = 161;}
-				if(this.v_label ==  8529 ) {this.route_id = 923;}
-				if(this.v_label ==  8530 ) {this.route_id = 924;}
-				if(this.v_label ==  8531 ) {this.route_id = 925;}
-				if(this.v_label ==  8534 ) {this.route_id = 928;}
-				if(this.v_label ==  8641 ) {this.route_id = 101;}
-				if(this.v_label ==  8642 ) {this.route_id = 102;}
-				if(this.v_label ==  8645 ) {this.route_id = 121;}
-				if(this.v_label ==  8646 ) {this.route_id = 128;}
-				if(this.v_label ==  8647 ) {this.route_id = 140;}
-				if(this.v_label ==  8648 ) {this.route_id = 144;}
-				if(this.v_label ==  8480 ) {this.route_id = 153;}
-				if(this.v_label ==  8481 ) {this.route_id = 161;}
-				if(this.v_label ==  8698 ) {this.route_id = 923;}
-				if(this.v_label ==  8699 ) {this.route_id = 924;}
-				if(this.v_label ==  8700 ) {this.route_id = 925;}
-				if(this.v_label ==  8703 ) {this.route_id = 928;}
-				
-					alert( "Route_id: "+this.route_id);
-				
-				//var infoWindow = new google.maps.InfoWindow({map:map});
-        
-                                      // infoWindow.setPosition(v_pos);
-        
-                                       //infoWindow.setContent("Your current location!!!");
+				if(this.v_label ==  8473 ) {this.route_id = "101";}
+				if(this.v_label ==  8474 ) {this.route_id = "102";}
+				if(this.v_label ==  8476 ) {this.route_id = "121";}
+				if(this.v_label ==  8477 ) {this.route_id = "128";}
+				if(this.v_label ==  8478 ) {this.route_id = "140";}
+				if(this.v_label ==  8479 ) {this.route_id = "144";}
+				if(this.v_label ==  8649 ) {this.route_id = "153";}
+				if(this.v_label ==  8650 ) {this.route_id = "161";}
+				if(this.v_label ==  8529 ) {this.route_id = "923";}
+				if(this.v_label ==  8530 ) {this.route_id = "924";}
+				if(this.v_label ==  8531 ) {this.route_id = "925";}
+				if(this.v_label ==  8534 ) {this.route_id = "928";}
+				if(this.v_label ==  8641 ) {this.route_id = "101";}
+				if(this.v_label ==  8642 ) {this.route_id = "102";}
+				if(this.v_label ==  8645 ) {this.route_id = "121";}
+				if(this.v_label ==  8646 ) {this.route_id = "128";}
+				if(this.v_label ==  8647 ) {this.route_id = "140";}
+				if(this.v_label ==  8648 ) {this.route_id = "144";}
+				if(this.v_label ==  8480 ) {this.route_id = "153";}
+				if(this.v_label ==  8481 ) {this.route_id = "161";}
+				if(this.v_label ==  8698 ) {this.route_id = "923";}
+				if(this.v_label ==  8699 ) {this.route_id = "924";}
+				if(this.v_label ==  8700 ) {this.route_id = "925";}
+				if(this.v_label ==  8703 ) {this.route_id = "928";}
+
+
+				var infowindowS = new google.maps.InfoWindow();
+  		                infowindowS.setContent( this.route_id + " Bus current location");
+		                infowindowS.open(map, this);
 				
 				});
 			} // Restricting only to CT Fastrack buses
@@ -221,7 +246,7 @@ function setMapOnAll(map) {
 	</div>
       <div id = "sample" style = "position:absolute;width:100%; height:80%;"></div>
 <script>
-	  var map, markerSource, markerDestination;
+	  var map, markerSource, markerDestination, busstopname;
 
 
 	  var bluemarkers = []; /* Array of blue markers. We're indexing blue markers because we need to remove 
@@ -758,6 +783,15 @@ function busstops(routePath){
       position: routePath.getPath().getAt(i),
       map: map
     });
+	marker.set("busstoplocation", routePath.getPath().getAt(i));
+	var infowindowS = new google.maps.InfoWindow();
+
+	google.maps.event.addListener(marker, 'click', function() {
+	   geocodeLatLng(geocoder, map, infowindowS, this.busstoplocation);
+              infowindowS.open(map, this);
+            });
+
+
 	stopmarkers.push(marker);
   }
 	showstopMarkers();
@@ -813,7 +847,16 @@ function nearbusstations(pos) {
           map: map,
           position: place.geometry.location,
 		  icon: image
+
         });
+	markerbus.set("busstoplocation", place.geometry.location);
+
+	var infowindowS = new google.maps.InfoWindow();
+
+	google.maps.event.addListener(markerbus, 'click', function() {
+	   geocodeLatLng(geocoder, map, infowindowS, this.busstoplocation);
+              infowindowS.open(map, this);
+            });
 	    bluemarkers.push(markerbus); //adding marker to the array. to be able to delete them later in case of a new search.
       }
     }
@@ -890,7 +933,22 @@ function calculateAndDisplayRoute(directionsService, directionsDisplay, pointA, 
     }
   });
 }
+function geocodeLatLng(geocoder, map, infowindow, position) {
 
+	var latlng = position;
+        geocoder.geocode({'location': latlng}, function(results, status) {
+          if (status === 'OK') {
+            if (results[1]) {
+              infowindow.setContent(results[1].formatted_address);
+            } else {
+              window.alert('No results found');
+            }
+          } else {
+            window.alert('Geocoder failed due to: ' + status);
+          }
+        });
+
+      }
     </script>
 	<script src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry">
     </script>
