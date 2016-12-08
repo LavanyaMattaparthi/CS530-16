@@ -13,7 +13,7 @@ from sys import exit
 # routes will be referred to by this column from routes.txt
 routeIdColumn="route_short_name"
 # select these routes
-selectRoutes=()
+selectRoutes=('101','102','121','128','140','144','153','161','923','924','925','928')
 # stops that will never appear per route (stops will have IDs in their <th>)
 excludeStops={}
 # stops that will have their times counted down (or all of them)
