@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html>
+   <head>
+ <script src = "https://maps.googleapis.com/maps/api/js"></script>
+    <script src="busschedule/utils.js"></script>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    	<meta charset="utf-8">
+	    <Title>CTFastrack - TeamSpark</Title>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		
+<style>
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #3498DB;
+}
+li {
+    float: left;
+}
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+li a:hover {
+    background-color: #111;
+}
+</style>   		
+<ul>
+    <li class="active" ><a href="#"><font size="6">CTFastrack <i>- TeamSpark</i></font></a></li>
+    <font size="5"><li><a href="CTFastrack_TeamSpark-Iteration3.html">Home</a></li>
+    <li><a href="busschedule/Bus-Schedule.html">Bus Schedule</a></li>
+    <li><a href="Trip-Planner.html">Trip Planner</a></li>
+    <li><a href="#">Contact us</a></li>
+	</font>
+	
+  </ul>
+ <br>
+    <style>
+      #map {
+        height: 90%;
+      }
+      #header {
+        height: 10%;
+		margin-top:1px;
+		margin-left:20px;
+      }
+      html, body {
+        height: 92%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+
+<script>
+var image = {
+	url: 'busschedule/Bus_25.png',
+	// This marker is 40 pixels wide by 50 pixels high.
+	size: new google.maps.Size(40, 50),
+	// The origin for this image is (0, 0).
+	origin: new google.maps.Point(0, 0),
+	anchor: new google.maps.Point(0, 0)
+}
+var map;
+function loadMap() {
+            var mapOptions = {
+               center:new google.maps.LatLng(41.8014374, -72.75011),
+               zoom:11,
+               mapTypeId:google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("sample"),mapOptions);
+			startGettingBussesInfo();
+}
+google.maps.event.addDomListener(window, 'load', loadMap);
+function startGettingBussesInfo()
+{
+   var interval = setInterval(getBussesInformation,5000);	
+}
+		 
+function getBussesInformation()
+{
+		url="http://65.213.12.244/realtimefeed/vehicle/vehiclepositions.json";
+		var success = function(response){
+			addAndUpdateBusses(JSON.parse(response));
+		}; 
+		var error = function()
+		{
+		   log('Error');
+		};
+		var startTime = new Date().getTime();
+		HttpClient.Get(url,success,error);
+}
+markers = [];
+stopmarkers = [];
+function addAndUpdateBusses(data)
+{
+	    var Busses = data.entity;
+	    clearMarkers();
+		markers = [];
+		for(d=0;d<Busses.length;d++)
+		{
+			bus_id = Busses[d].vehicle.trip.route_id;
+ 			if (bus_id == 8473 || bus_id == 8474 || bus_id == 8476 || bus_id == 8477 || bus_id == 8478 || bus_id == 8479 || bus_id == 8649 || bus_id == 8650 || bus_id == 8529 || bus_id == 8530 || bus_id == 8531 || bus_id == 8534 
+			    || bus_id == 8641 || bus_id == 8642 || bus_id == 8645 || bus_id == 8646 || bus_id == 8647 || bus_id == 8648 || bus_id == 8480 || bus_id == 8481 || bus_id == 8698 || bus_id == 8699 || bus_id == 8700 || bus_id == 8703)
+			{
+		    
+				var vehicle_position = 	Busses[d].vehicle.position;
+	            		var myLatLng = new google.maps.LatLng(vehicle_position.latitude, vehicle_position.longitude); //or wherever you want the marker placed
+				var type = Busses[d].vehicle.trip.route_id;
+				var one = "1";
+				if(type   ==  8473 ) {type   = "101";}
+				if(type   ==  8474 ) {type   = "102";}
+				if(type   ==  8476 ) {type   = "121";}
+				if(type   ==  8477 ) {type   = "128";}
+				if(type   ==  8478 ) {type   = "140";}
+				if(type   ==  8479 ) {type   = "144";}
+				if(type   ==  8649 ) {type   = "153";}
+				if(type   ==  8650 ) {type   = "161";}
+				if(type   ==  8529 ) {type   = "923";}
+				if(type   ==  8530 ) {type   = "924";}
+				if(type   ==  8531 ) {type   = "925";}
+				if(type   ==  8534 ) {type   = "928";}
+				if(type   ==  8641 ) {type   = "101";}
+				if(type   ==  8642 ) {type   = "102";}
+				if(type   ==  8645 ) {type   = "121";}
+				if(type   ==  8646 ) {type   = "128";}
+				if(type   ==  8647 ) {type   = "140";}
+				if(type   ==  8648 ) {type   = "144";}
+				if(type   ==  8480 ) {type   = "153";}
+				if(type   ==  8481 ) {type   = "161";}
+				if(type   ==  8698 ) {type   = "923";}
+				if(type   ==  8699 ) {type   = "924";}
+				if(type   ==  8700 ) {type   = "925";}
+				if(type   ==  8703 ) {type   = "928";}
+			    	var Marker = new google.maps.Marker({ position: myLatLng, map: map,label: type,icon: image,}); 
+			
+				Marker.set("v_id", Busses[d].vehicle.vehicle.id);
+				Marker.set("v_label", Busses[d].vehicle.trip.route_id);
+				Marker.set("route_id", Busses[d].id);
+				var busLL = new google.maps.LatLng(Busses[d].vehicle.position.latitude, Busses[d].vehicle.position.longitude);
+				Marker.set("v_pos", busLL);
+				google.maps.event.addListener(Marker, 'click', function() {
+			
+				if(this.v_label ==  8473 ) {this.route_id = "101";}
+				if(this.v_label ==  8474 ) {this.route_id = "102";}
+				if(this.v_label ==  8476 ) {this.route_id = "121";}
+				if(this.v_label ==  8477 ) {this.route_id = "128";}
+				if(this.v_label ==  8478 ) {this.route_id = "140";}
+				if(this.v_label ==  8479 ) {this.route_id = "144";}
+				if(this.v_label ==  8649 ) {this.route_id = "153";}
+				if(this.v_label ==  8650 ) {this.route_id = "161";}
+				if(this.v_label ==  8529 ) {this.route_id = "923";}
+				if(this.v_label ==  8530 ) {this.route_id = "924";}
+				if(this.v_label ==  8531 ) {this.route_id = "925";}
+				if(this.v_label ==  8534 ) {this.route_id = "928";}
+				if(this.v_label ==  8641 ) {this.route_id = "101";}
+				if(this.v_label ==  8642 ) {this.route_id = "102";}
+				if(this.v_label ==  8645 ) {this.route_id = "121";}
+				if(this.v_label ==  8646 ) {this.route_id = "128";}
+				if(this.v_label ==  8647 ) {this.route_id = "140";}
+				if(this.v_label ==  8648 ) {this.route_id = "144";}
+				if(this.v_label ==  8480 ) {this.route_id = "153";}
+				if(this.v_label ==  8481 ) {this.route_id = "161";}
+				if(this.v_label ==  8698 ) {this.route_id = "923";}
+				if(this.v_label ==  8699 ) {this.route_id = "924";}
+				if(this.v_label ==  8700 ) {this.route_id = "925";}
+				if(this.v_label ==  8703 ) {this.route_id = "928";}
+				var infowindowS = new google.maps.InfoWindow();
+  		                infowindowS.setContent( this.route_id + " Bus current location");
+		                infowindowS.open(map, this);
+				
+				});
+			} // Restricting only to CT Fastrack buses
+			markers.push(Marker);
+		}
+		showMarkers();
+}
+function showMarkers() {
+ setMapOnAll(map);
+}
+function clearMarkers() {
+ setMapOnAll(null);
+}
+function setMapOnAll(map) {
+  for (var i = 0; i < markers.length; i++) {
+    markers[i].setMap(map);
+  }
+}
+      </script>
+      
+   </head>
+   
+   <body style="margin:0px" onload="initMap()">
+	<div id="header">
+		<font face="Calibri" size=4> Source:  </font><font size=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>
+		<!--Modified Search window to be type as Search box type- This allows user to close the current search and get back to current location-->
+		<input type="search" id="source" size="50" placeholder="Search source address">
+		<a id="source-link" href="#"><font face="Calibri" size=2>Get my position</font></a>&nbsp;&nbsp;
+		<input type="button" value="Locate my location on map" onclick="detectmylocation()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<font face="Calibri" size=4> Select Route: </font> 
+		<select id="RouteSelected" onchange="showStops()">
+		    <option value="-1">Select route</option>
+		    <option value="101">101</option> 
+		    <option value="102">102</option>
+		    <option value="121">121</option>
+		    <option value="128">128</option>
+		    <option value="140">140</option>
+		    <option value="144">144</option>
+		    <option value="153">153</option>
+		    <option value="161">161</option>
+		</select>
+		<br>
+		<font face="Calibri" size=4> Destination: </font> 
+		<input type="search" id="destination" size="50" placeholder="Search destination address">
+		<a id="destination-link" href="#"><font face="Calibri" size=2>Get my position</font></a>&nbsp;&nbsp;
+		<input type="button" value="Show route and get distance" onclick="getdistance()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<font size=5><span id="sDistance"></span>
+		<span id="sDuration"></span></font>
+
+	</div>
+      <div id = "sample" style = "position:absolute;width:100%; height:80%;"></div>
+<script>
+	  var map, markerSource, markerDestination, busstopname;
+	  var bluemarkers = []; /* Array of blue markers. We're indexing blue markers because we need to remove 
+							them in each new search before adding new ones */
+	  var directionsDisplay;
+      function initMap() {
+	  //  map = new google.maps.Map(document.getElementById('map'), {
+	  //    zoom: 14
+	  //  });
+	    geocoder = new google.maps.Geocoder();
+	    directionsDisplay = new google.maps.DirectionsRenderer();
+	    directionsService = new google.maps.DirectionsService();
+          //Define CTFastrak boundary
+	    polygonCoords = [
+                          { lat: 41.806523, lng: -72.751854 },
+                          { lat: 41.806523, lng: -72.586373 },
+                          { lat: 41.726378, lng: -72.590493 },
+                          { lat: 41.616617, lng: -72.754944 },
+                          { lat: 41.645357, lng: -72.869614 },
+                          { lat: 41.750716, lng: -72.853821 },
+                          { lat: 41.806523, lng: -72.751854 }
+	    ];
+	    fastrakPolygon = new google.maps.Polygon({ paths: polygonCoords });
+	    google.maps.event.addListener(map, 'click', function (event) { console.log(google.maps.geometry.poly.containsLocation(event.latLng, fastrakPolygon)); });
+          //Load CTFastrak routes, parking, and multi-use trail access points
+	    ctfastrak = new google.maps.KmlLayer({
+	        map: map,
+	        url: 'https://drive.google.com/uc?export=download&id=0BzSh5RLL0GhUTUhmWDNCb1pXblk',
+	        preserveViewport: true,
+	        suppressInfoWindows: true
+	    }); 
+          //Display CTFastrak KML attributes in 'content-window' div
+	    ctfastrak.addListener('click', function (kmlEvent) {
+		var RouteClicked =  kmlEvent.featureData.name.substring(9, 6);
+		document.getElementById("sDuration").textContent = "";
+		document.getElementById("sDistance").textContent = kmlEvent.featureData.name;
+		
+		if (RouteClicked == 101) {path101();}
+		if (RouteClicked == 102) {path102();}
+		if (RouteClicked == 121) {path121();}
+		if (RouteClicked == 128) {path128();}
+		if (RouteClicked == 140) {path140();}
+		if (RouteClicked == 144) {path144();}
+		if (RouteClicked == 153) {path153();}
+		if (RouteClicked == 161) {path161();}
+	    });
+	  //Logic to locate current location when loading page
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+	
+	
+	// Code to locate nearby bus stops
+	nearbusstations(pos);
+	markerSource = new google.maps.Marker({
+		position: new google.maps.LatLng(pos),
+		map:map,
+		title: "Your current location!!! "	
+	});
+	
+	var infoWindow = new google.maps.InfoWindow({map:map});
+        infoWindow.setPosition(pos);
+        infoWindow.setContent("Your current location!!!");
+        map.setCenter(pos);
+        }, function() {
+           handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation <!-- ?callback=initMap -->
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+		markerSource = new google.maps.Marker ({
+		   map:map
+		});
+		markerDestination = new google.maps.Marker ({
+		   map:map
+		});
+		var searchBox = new google.maps.places.SearchBox(document.getElementById('source'));
+		google.maps.event.addListener(searchBox, 'places_changed', function() {
+		     var places = searchBox.getPlaces();
+		     var bounds = new google.maps.LatLngBounds();
+		     var i, place;
+		     for (i=0; place=places[i];i++){
+		          bounds.extend(place.geometry.location);
+		          markerSource.setPosition(place.geometry.location);
+	    		  var searchedpos = {
+                               lat: place.geometry.location.lat(),
+                               lng: place.geometry.location.lng()
+                           };
+			nearbusstations(searchedpos);
+		     }
+		     map.fitBounds(bounds);
+		     map.setZoom(12);
+		});
+		var searchBox2 = new google.maps.places.SearchBox(document.getElementById('destination'));
+		google.maps.event.addListener(searchBox2, 'places_changed', function() {
+		     var places = searchBox2.getPlaces();
+		     var bounds = new google.maps.LatLngBounds();
+		     var i, place;
+		     for (i=0; place=places[i];i++){
+		          bounds.extend(place.geometry.location);
+		          markerDestination.setPosition(place.geometry.location);
+	    		  var searchedpos = {
+                               lat: place.geometry.location.lat(),
+                               lng: place.geometry.location.lng()
+                           };
+		     }
+		     map.fitBounds(bounds);
+		     map.setZoom(12);
+		});
+      }
+	  
+	   $("#source-link, #destination-link").click(function(event) {
+         event.preventDefault();
+        var addressId = this.id.substring(0, this.id.indexOf("-"));
+		  
+		   navigator.geolocation.getCurrentPosition(function(position) {
+            var geocoder = new google.maps.Geocoder();
+			
+            geocoder.geocode({
+              "location": new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+            },
+            function(results, status) {
+              if (status == google.maps.GeocoderStatus.OK)
+                $("#" + addressId).val(results[0].formatted_address);
+              else
+                $("#error").append("Unable to retrieve your address<br />");
+            });
+		
+},
+		  
+         function(positionError){
+           $("#error").append("Error: " + positionError.message + "<br />");
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10 * 1000 // 10 seconds
+          });
+        });
+		
+//Lavanya
+function path101(){
+var routePath = new google.maps.Polyline({
+    path: [new google.maps.LatLng(41.764928,-72.673497),
+new google.maps.LatLng(41.767318,-72.676229),
+new google.maps.LatLng(41.767716,-72.680275),
+new google.maps.LatLng(41.764211,-72.695062),
+new google.maps.LatLng(41.757087,-72.703906),
+new google.maps.LatLng(41.750461,-72.709077),
+new google.maps.LatLng(41.741191,-72.716347),
+new google.maps.LatLng(41.730509,-72.724864),
+new google.maps.LatLng(41.71621,-72.73641),
+new google.maps.LatLng(41.695854,-72.753853),
+new google.maps.LatLng(41.687617,-72.758666),
+new google.maps.LatLng(41.6715,-72.766279),
+new google.maps.LatLng(41.668673,-72.78034)],
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+    busstops(routePath);
+}
+function path102(){
+var routePath = new google.maps.Polyline({
+    path: [new google.maps.LatLng(41.764928,-72.673497),
+new google.maps.LatLng(41.767318,-72.676229),
+new google.maps.LatLng(41.767716,-72.680275),
+new google.maps.LatLng(41.768136,-72.688258),
+new google.maps.LatLng(41.766748,-72.69387),
+new google.maps.LatLng(41.764211,-72.695062),
+new google.maps.LatLng(41.757087,-72.703906),
+new google.maps.LatLng(41.750461,-72.709077),
+new google.maps.LatLng(41.741191,-72.716347),
+new google.maps.LatLng(41.730509,-72.724864),
+new google.maps.LatLng(41.71621,-72.73641),
+new google.maps.LatLng(41.695854,-72.753853),
+new google.maps.LatLng(41.687617,-72.758666),
+new google.maps.LatLng(41.6715,-72.766279),
+new google.maps.LatLng(41.668404,-72.77913),
+new google.maps.LatLng(41.677616,-72.847655),
+new google.maps.LatLng(41.676919,-72.850401),
+new google.maps.LatLng(41.676061,-72.853426),
+new google.maps.LatLng(41.673583,-72.860999),
+new google.maps.LatLng(41.672349,-72.864217),
+new google.maps.LatLng(41.671759,-72.86585),
+new google.maps.LatLng(41.670846,-72.869358),
+new google.maps.LatLng(41.670274,-72.87214),
+new google.maps.LatLng(41.670094,-72.875104),
+new google.maps.LatLng(41.66994,-72.879459),
+new google.maps.LatLng(41.670785,-72.90558),
+new google.maps.LatLng(41.669192,-72.909292),
+new google.maps.LatLng(41.668563,-72.914179),
+new google.maps.LatLng(41.66703,-72.920783),
+new google.maps.LatLng(41.666591,-72.922802),
+new google.maps.LatLng(41.668186,-72.928769),
+new google.maps.LatLng(41.668488,-72.931261),
+new google.maps.LatLng(41.668781,-72.93379),
+new google.maps.LatLng(41.668707,-72.936694),
+new google.maps.LatLng(41.668043,-72.939608),
+new google.maps.LatLng(41.668433,-72.943117),
+new google.maps.LatLng(41.671266,-72.943243),
+new google.maps.LatLng(41.673373,-72.945751)],
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+    busstops(routePath);
+}
+function path121(){
+var routePath = new google.maps.Polyline({
+    path: [new google.maps.LatLng(41.734146,-72.789668),
+new google.maps.LatLng(41.733727,-72.793725),
+new google.maps.LatLng(41.725746,-72.791307),
+new google.maps.LatLng(41.72226,-72.789226),
+new google.maps.LatLng(41.696149,-72.753925),
+new google.maps.LatLng(41.716415,-72.736083),
+new google.maps.LatLng(41.730473,-72.724792),
+new google.maps.LatLng(41.741709,-72.71648),
+new google.maps.LatLng(41.750416,-72.708981),
+new google.maps.LatLng(41.757096,-72.703676),
+new google.maps.LatLng(41.76472,-72.694831),
+new google.maps.LatLng(41.763386,-72.692519),
+new google.maps.LatLng(41.763621,-72.686946),
+new google.maps.LatLng(41.762839,-72.682829),
+new google.maps.LatLng(41.762372,-72.68111),
+new google.maps.LatLng(41.761421,-72.677502),
+new google.maps.LatLng(41.762445,-72.674253),
+new google.maps.LatLng(41.764928,-72.673497),
+new google.maps.LatLng(41.764928,-72.673497),
+new google.maps.LatLng(41.767892,-72.670958),
+new google.maps.LatLng(41.769331,-72.656477),
+new google.maps.LatLng(41.76933,-72.649268),
+new google.maps.LatLng(41.769028,-72.644181),
+new google.maps.LatLng(41.766849,-72.645471),
+new google.maps.LatLng(41.760385,-72.643779),
+new google.maps.LatLng(41.761667,-72.634581),
+new google.maps.LatLng(41.762771,-72.626026),
+new google.maps.LatLng(41.763214,-72.617641),
+new google.maps.LatLng(41.764495,-72.608588),
+new google.maps.LatLng(41.765324,-72.60254),
+new google.maps.LatLng(41.76581,-72.599316),
+new google.maps.LatLng(41.765957,-72.591611),
+new google.maps.LatLng(41.765471,-72.580006),
+new google.maps.LatLng(41.767417,-72.574414),
+new google.maps.LatLng(41.766774,-72.570273),
+new google.maps.LatLng(41.761139,-72.563426)],
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+	//routePath.setMap(map);
+    busstops(routePath);
+}
+function path128(){
+var routePath = new google.maps.Polyline({
+    path: [new google.maps.LatLng(41.668539,-72.779735),
+new google.maps.LatLng(41.670761,-72.771845),
+new google.maps.LatLng(41.671995,-72.775353),
+new google.maps.LatLng(41.674228,-72.772689),
+new google.maps.LatLng(41.678382,-72.768814),
+new google.maps.LatLng(41.681125,-72.768195),
+new google.maps.LatLng(41.683153,-72.76754),
+new google.maps.LatLng(41.687766,-72.770113),
+new google.maps.LatLng(41.688829,-72.770306),
+new google.maps.LatLng(41.690322,-72.770692),
+new google.maps.LatLng(41.691672,-72.77103),
+new google.maps.LatLng(41.695712,-72.772249),
+new google.maps.LatLng(41.698992,-72.774219),
+new google.maps.LatLng(41.700797,-72.774544),
+new google.maps.LatLng(41.704049,-72.771528),
+new google.maps.LatLng(41.706442,-72.76775),
+new google.maps.LatLng(41.710007,-72.765785),
+new google.maps.LatLng(41.716244,-72.762947),
+new google.maps.LatLng(41.719166,-72.761746),
+new google.maps.LatLng(41.720559,-72.761151),
+new google.maps.LatLng(41.722891,-72.760229),
+new google.maps.LatLng(41.724921,-72.76145),
+new google.maps.LatLng(41.72566,-72.757672),
+new google.maps.LatLng(41.729554,-72.752195),
+new google.maps.LatLng(41.730009,-72.75062),
+new google.maps.LatLng(41.73033,-72.749312),
+new google.maps.LatLng(41.730722,-72.747665),
+new google.maps.LatLng(41.731381,-72.744879),
+new google.maps.LatLng(41.731559,-72.743075),
+new google.maps.LatLng(41.731861,-72.740192),
+new google.maps.LatLng(41.732172,-72.737504),
+new google.maps.LatLng(41.732501,-72.734694),
+new google.maps.LatLng(41.731791,-72.729851),
+new google.maps.LatLng(41.731617,-72.724645),
+new google.maps.LatLng(41.735002,-72.722472),
+new google.maps.LatLng(41.736691,-72.721222),
+new google.maps.LatLng(41.741709,-72.71648),
+new google.maps.LatLng(41.750416,-72.708981),
+new google.maps.LatLng(41.757096,-72.703676),
+new google.maps.LatLng(41.764326,-72.694601),
+new google.maps.LatLng(41.767637,-72.681305),
+new google.maps.LatLng(41.765021,-72.676598),
+new google.maps.LatLng(41.764928,-72.673497)],
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+    busstops(routePath);
+}
+function path140(){
+var routePath = new google.maps.Polyline({
+    path: [new google.maps.LatLng(41.696149,-72.753925),
+new google.maps.LatLng(41.687769,-72.758762),
+new google.maps.LatLng(41.688699,-72.759899),
+new google.maps.LatLng(41.691319,-72.761457),
+new google.maps.LatLng(41.690382,-72.765609),
+new google.maps.LatLng(41.68857,-72.769495),
+new google.maps.LatLng(41.690322,-72.770692),
+new google.maps.LatLng(41.691672,-72.77103),
+new google.maps.LatLng(41.693726,-72.767918),
+new google.maps.LatLng(41.695047,-72.76477),
+new google.maps.LatLng(41.698413,-72.760035),
+new google.maps.LatLng(41.696149,-72.753925)],
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+    busstops(routePath);
+}
+function path144(){
+var routePath = new google.maps.Polyline({
+    path: [new google.maps.LatLng(41.724921,-72.76145),
+new google.maps.LatLng(41.720658,-72.761527),
+new google.maps.LatLng(41.71569,-72.763662),
+new google.maps.LatLng(41.709946,-72.76742),
+new google.maps.LatLng(41.710858,-72.768956),
+new google.maps.LatLng(41.712359,-72.768507),
+new google.maps.LatLng(41.713236,-72.770625),
+new google.maps.LatLng(41.712254,-72.774754),
+new google.maps.LatLng(41.710834,-72.775287),
+new google.maps.LatLng(41.710725,-72.772443),
+new google.maps.LatLng(41.710527,-72.769187),
+new google.maps.LatLng(41.710025,-72.766015),
+new google.maps.LatLng(41.7063,-72.768101),
+new google.maps.LatLng(41.704192,-72.771649),
+new google.maps.LatLng(41.700699,-72.774799),
+new google.maps.LatLng(41.69834,-72.774292),
+new google.maps.LatLng(41.695855,-72.772733),
+new google.maps.LatLng(41.693726,-72.767918),
+new google.maps.LatLng(41.695047,-72.76477),
+new google.maps.LatLng(41.698413,-72.760035),
+new google.maps.LatLng(41.696149,-72.753925),
+new google.maps.LatLng(41.693782,-72.756009),
+new google.maps.LatLng(41.695179,-72.745285),
+new google.maps.LatLng(41.697392,-72.728931),
+new google.maps.LatLng(41.695215,-72.721624),
+new google.maps.LatLng(41.695454,-72.718937),
+new google.maps.LatLng(41.697483,-72.719055),
+new google.maps.LatLng(41.700768,-72.705712),
+new google.maps.LatLng(41.703224,-72.703396),
+new google.maps.LatLng(41.716604,-72.69612),
+new google.maps.LatLng(41.72014,-72.692905),
+new google.maps.LatLng(41.72084,-72.68811),
+new google.maps.LatLng(41.721053,-72.686669),
+new google.maps.LatLng(41.721337,-72.684779),
+new google.maps.LatLng(41.721834,-72.681086),
+new google.maps.LatLng(41.7221,-72.679305),
+new google.maps.LatLng(41.722419,-72.677137),
+new google.maps.LatLng(41.722676,-72.675115),
+new google.maps.LatLng(41.723057,-72.672402),
+new google.maps.LatLng(41.723394,-72.670125),
+new google.maps.LatLng(41.724585,-72.665086),
+new google.maps.LatLng(41.723998,-72.667448)],
+    strokeColor: '#804040',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+	//routePath.setMap(map);
+	busstops(routePath);
+}
+function path153(){
+var routePath = new google.maps.Polyline({
+    path: [new google.maps.LatLng(41.739746,-72.720261),
+new google.maps.LatLng(41.742174,-72.71683),
+new google.maps.LatLng(41.741213,-72.711685),
+new google.maps.LatLng(41.742443,-72.717266),
+new google.maps.LatLng(41.742906,-72.726663),
+new google.maps.LatLng(41.74466,-72.729785),
+new google.maps.LatLng(41.746582,-72.72954),
+new google.maps.LatLng(41.748512,-72.729283),
+new google.maps.LatLng(41.750451,-72.729123),
+new google.maps.LatLng(41.75273,-72.729011),
+new google.maps.LatLng(41.754214,-72.729057),
+new google.maps.LatLng(41.755241,-72.729189),
+new google.maps.LatLng(41.755707,-72.730157),
+new google.maps.LatLng(41.755271,-72.732483),
+new google.maps.LatLng(41.754835,-72.734907),
+new google.maps.LatLng(41.75422,-72.738057),
+new google.maps.LatLng(41.753525,-72.741594),
+new google.maps.LatLng(41.753214,-72.743206),
+new google.maps.LatLng(41.754063,-72.74375),
+new google.maps.LatLng(41.756002,-72.743699),
+new google.maps.LatLng(41.759263,-72.742169),
+new google.maps.LatLng(41.764054,-72.741884),
+new google.maps.LatLng(41.765895,-72.742403),
+new google.maps.LatLng(41.767745,-72.742643),
+new google.maps.LatLng(41.769435,-72.743005),
+new google.maps.LatLng(41.771759,-72.744116),
+new google.maps.LatLng(41.7731,-72.744805),
+new google.maps.LatLng(41.775183,-72.745154),
+new google.maps.LatLng(41.777203,-72.745443),
+new google.maps.LatLng(41.78093,-72.746262),
+new google.maps.LatLng(41.782825,-72.746527),
+new google.maps.LatLng(41.784631,-72.746731),
+new google.maps.LatLng(41.788001,-72.747781),
+new google.maps.LatLng(41.789538,-72.747222),
+new google.maps.LatLng(41.790789,-72.746784),
+new google.maps.LatLng(41.793023,-72.746515),
+new google.maps.LatLng(41.79566,-72.747288),
+new google.maps.LatLng(41.797269,-72.747698),
+new google.maps.LatLng(41.799576,-72.748992),
+new google.maps.LatLng(41.800604,-72.749609),
+new google.maps.LatLng(41.801811,-72.750153),
+new google.maps.LatLng(41.803313,-72.750636),
+new google.maps.LatLng(41.813472,-72.745873),
+new google.maps.LatLng(41.808529,-72.745503),
+new google.maps.LatLng(41.801659,-72.737063),
+new google.maps.LatLng(41.79469,-72.716917),
+new google.maps.LatLng(41.796677,-72.720513),
+new google.maps.LatLng(41.801811,-72.725329),
+new google.maps.LatLng(41.804441,-72.727556),
+new google.maps.LatLng(41.806364,-72.729238),
+new google.maps.LatLng(41.807535,-72.730255),
+new google.maps.LatLng(41.80944,-72.731949),
+new google.maps.LatLng(41.812267,-72.73454),
+new google.maps.LatLng(41.814646,-72.737034),
+new google.maps.LatLng(41.816684,-72.73794),
+new google.maps.LatLng(41.816789,-72.734521),
+new google.maps.LatLng(41.816956,-72.730217),
+new google.maps.LatLng(41.817141,-72.72675),
+new google.maps.LatLng(41.817193,-72.725586),
+new google.maps.LatLng(41.81728,-72.722118),
+new google.maps.LatLng(41.817385,-72.719427),
+new google.maps.LatLng(41.817848,-72.717535),
+new google.maps.LatLng(41.816852,-72.713099)],
+    strokeColor: '#0BA9CC',
+    strokeOpacity: 1.0,
+    strokeWeight: 5
+  });
+    //routePath.setMap(map);
+    busstops(routePath);
+    path153_1();
+}
+function path153_1(){
+var routePath = new google.maps.Polyline({
+    path: [
+new google.maps.LatLng(41.803313,-72.750636),
+new google.maps.LatLng(41.801659,-72.737063),
+new google.maps.LatLng(41.79469,-72.716917),
+new google.maps.LatLng(41.796677,-72.720513),
+new google.maps.LatLng(41.801811,-72.725329),
+new google.maps.LatLng(41.804441,-72.727556),
+new google.maps.LatLng(41.806364,-72.729238),
+new google.maps.LatLng(41.807535,-72.730255),
+new google.maps.LatLng(41.80944,-72.731949),
+new google.maps.LatLng(41.812267,-72.73454),
+new google.maps.LatLng(41.814646,-72.737034),
+new google.maps.LatLng(41.816684,-72.73794),
+new google.maps.LatLng(41.816789,-72.734521),
+new google.maps.LatLng(41.816956,-72.730217),
+new google.maps.LatLng(41.817141,-72.72675),
+new google.maps.LatLng(41.817193,-72.725586),
+new google.maps.LatLng(41.81728,-72.722118),
+new google.maps.LatLng(41.817385,-72.719427),
+new google.maps.LatLng(41.817848,-72.717535),
+new google.maps.LatLng(41.816852,-72.713099)],
+    strokeColor: '#0BA9CC',
+    strokeOpacity: 1.0,
+    strokeWeight: 5
+  });
+    routePath.setMap(map);
+    //busstops(routePath);
+}
+function path161(){
+var routePath = new google.maps.Polyline({
+    path: [new google.maps.LatLng(41.753598,-72.682679),
+new google.maps.LatLng(41.754741,-72.682531),
+new google.maps.LatLng(41.758146,-72.682185),
+new google.maps.LatLng(41.759406,-72.682049),
+new google.maps.LatLng(41.761015,-72.681864),
+new google.maps.LatLng(41.76344,-72.684778),
+new google.maps.LatLng(41.763935,-72.687709),
+new google.maps.LatLng(41.763644,-72.691538),
+new google.maps.LatLng(41.764434,-72.695134),
+new google.maps.LatLng(41.766747,-72.693628),
+new google.maps.LatLng(41.768168,-72.693649),
+new google.maps.LatLng(41.770672,-72.694892),
+new google.maps.LatLng(41.771847,-72.698597),
+new google.maps.LatLng(41.772367,-72.700353),
+new google.maps.LatLng(41.774046,-72.69972),
+new google.maps.LatLng(41.774859,-72.699343),
+new google.maps.LatLng(41.775707,-72.698396)],
+    strokeColor: '#FF0000',
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+    busstops(routePath);
+}
+function busstops(routePath){
+	clearstopMarkers();
+	stopmarkers = [];
+  for (var i = 0; i < routePath.getPath().getLength(); i++) {
+   var marker = new google.maps.Marker({
+      icon: {
+        // use whatever icon you want for the "dots"
+        url: "https://maps.gstatic.com/intl/en_us/mapfiles/markers2/measle_blue.png",
+        size: new google.maps.Size(7, 7),
+        anchor: new google.maps.Point(4, 4)
+      },
+      position: routePath.getPath().getAt(i),
+      map: map
+    });
+	marker.set("busstoplocation", routePath.getPath().getAt(i));
+	var infowindowS = new google.maps.InfoWindow();
+	google.maps.event.addListener(marker, 'click', function() {
+	   geocodeLatLng(geocoder, map, infowindowS, this.busstoplocation);
+              infowindowS.open(map, this);
+            });
+	stopmarkers.push(marker);
+  }
+	showstopMarkers();
+}
+function showstopMarkers() {
+ setStopsMapOnAll(map);
+}
+function clearstopMarkers() {
+ setStopsMapOnAll(null);
+}
+function setStopsMapOnAll(map) {
+  for (var i = 0; i < stopmarkers.length; i++) {
+    stopmarkers[i].setMap(map);
+  }
+}
+function showStops(){
+	document.getElementById("sDuration").textContent = "";
+	RouteSelected = document.getElementById("RouteSelected").value;
+ if (RouteSelected > 0){
+	if (RouteSelected == 101) {path101();document.getElementById("sDistance").textContent = "Route 101 via CTfastrak Guideway";}
+	if (RouteSelected == 102) {path102();document.getElementById("sDistance").textContent = "Route 102 - Hartford/New Britain-Bristol";}
+	if (RouteSelected == 121) {path121();document.getElementById("sDistance").textContent = "Route 121 - MCC/Hartford/UConn Health";}
+	if (RouteSelected == 128) {path128();document.getElementById("sDistance").textContent = "Route 128 - Hartford/Westfarms-New Britain via Stanley";}
+	if (RouteSelected == 140) {path140();document.getElementById("sDistance").textContent = "Route 140 - CCSU SHUTTLE";}
+	if (RouteSelected == 144) {path144();document.getElementById("sDistance").textContent = "Route 144 - Wethersfield/Westfarms via Newington ";}
+	if (RouteSelected == 153) {path153();document.getElementById("sDistance").textContent = "Route 153 - Flatbush/Copaco via West Hartford Center ";}
+	if (RouteSelected == 161) {path161();document.getElementById("sDistance").textContent = "Route 161 - St. Francis Hospital/Hartford Hospital";}
+  } else {clearstopMarkers();}
+}
+//Lavanya - End
+function nearbusstations(pos) {
+  removemarkers(); //removing old blue markers
+  var SearchLoc = new google.maps.LatLng(pos);
+  // Specify location, radius and place types for your Places API search.
+  var request = {
+    location: SearchLoc,
+    radius: '400',
+    types: ['bus_station']
+  };
+  var service = new google.maps.places.PlacesService(map);
+  service.nearbySearch(request, function(results, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      for (var i = 0; i < results.length; i++) {
+        var place = results[i];
+	var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+        var markerbus = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+		  icon: image
+        });
+	markerbus.set("busstoplocation", place.geometry.location);
+	var infowindowS = new google.maps.InfoWindow();
+	google.maps.event.addListener(markerbus, 'click', function() {
+	   geocodeLatLng(geocoder, map, infowindowS, this.busstoplocation);
+              infowindowS.open(map, this);
+            });
+	    bluemarkers.push(markerbus); //adding marker to the array. to be able to delete them later in case of a new search.
+      }
+    }
+  });
+}
+function detectmylocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+		
+		var infoWindow = new google.maps.InfoWindow({map:map});	
+          infoWindow.close(); //Close the previous infoWindow	
+          infoWindow.setPosition(pos);
+          infoWindow.setContent('You location!');
+		  markerSource.setPosition(pos);
+          map.setCenter(pos);
+		  nearbusstations(pos);
+      }, function() {
+        handleLocationError(true, infoWindow, map.getCenter());
+      });
+    }
+  }
+function removemarkers(){
+	// removes all blue markers
+    for(i=0; i<bluemarkers.length; i++){
+        bluemarkers[i].setMap(null);
+    }
+}
+function getdistance() {
+  var sourceLat = markerSource.getPosition().lat();
+  var sourceLng = markerSource.getPosition().lng();
+  var posSource = new google.maps.LatLng(sourceLat, sourceLng); // Source LatLng 
+  var destinationLat = markerDestination.getPosition().lat();
+  var destinationLng = markerDestination.getPosition().lng();
+  var posDestination = new google.maps.LatLng(destinationLat, destinationLng);  // Destination LatLng
+  var iDistance = google.maps.geometry.spherical.computeDistanceBetween(posSource, posDestination); // Distance between Source and Destination
+  iDistance = Math.round(iDistance/1609.344 * 100.0)/100.0;
+  document.getElementById("sDistance").textContent="Travel Distance: "+iDistance+" miles &"; // output distance to the page
+  getDuration(posSource, posDestination); // display travel time 
+  if (directionsDisplay != null) {
+      directionsDisplay.setMap(null);
+      directionsDisplay = null;
+  }
+  var directionsService = new google.maps.DirectionsService;
+  directionsDisplay = new google.maps.DirectionsRenderer({ map: map, polylineOptions: {strokeColor: "#FF0000"}});
+  calculateAndDisplayRoute(directionsService, directionsDisplay, posSource, posDestination); // display route
+}
+function getDuration(pointS, pointD) {
+   var directionsService = new google.maps.DirectionsService();
+   var request = {
+      origin: pointS,
+      destination: pointD,
+      travelMode: google.maps.DirectionsTravelMode.TRANSIT
+    };
+    directionsService.route( request, function( response, status ) {
+    if ( status === 'OK' ) {
+        document.getElementById("sDuration").textContent="Travel Time: "+response.routes[ 0 ].legs[ 0 ].duration.text;
+    }
+   } );
+}
+function calculateAndDisplayRoute(directionsService, directionsDisplay, pointA, pointB) {
+  directionsService.route({
+    origin: pointA,
+    destination: pointB,
+    travelMode: google.maps.TravelMode.TRANSIT
+  }, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    } else {
+      window.alert('Directions request failed due to ' + status);
+    }
+  });
+}
+function geocodeLatLng(geocoder, map, infowindow, position) {
+	var latlng = position;
+        geocoder.geocode({'location': latlng}, function(results, status) {
+          if (status === 'OK') {
+            if (results[1]) {
+              infowindow.setContent(results[1].formatted_address);
+            } else {
+              window.alert('No results found');
+            }
+          } else {
+            window.alert('Geocoder failed due to: ' + status);
+          }
+        });
+      }
+    </script>
+	<script src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry">
+    </script>
+
+   </body>
+   
+</html>
