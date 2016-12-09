@@ -69,7 +69,7 @@ var map;
 function loadMap() {
             var mapOptions = {
                center:new google.maps.LatLng(41.8014374, -72.75011),
-               zoom:12,
+               zoom:11,
                mapTypeId:google.maps.MapTypeId.ROADMAP
             };
             map = new google.maps.Map(document.getElementById("sample"),mapOptions);
@@ -318,7 +318,7 @@ function setMapOnAll(map) {
 			nearbusstations(searchedpos);
 		     }
 		     map.fitBounds(bounds);
-		     map.setZoom(14);
+		     map.setZoom(12);
 		});
 		var searchBox2 = new google.maps.places.SearchBox(document.getElementById('destination'));
 		google.maps.event.addListener(searchBox2, 'places_changed', function() {
@@ -334,7 +334,7 @@ function setMapOnAll(map) {
                            };
 		     }
 		     map.fitBounds(bounds);
-		     map.setZoom(14);
+		     map.setZoom(12);
 		});
       }
 	  
