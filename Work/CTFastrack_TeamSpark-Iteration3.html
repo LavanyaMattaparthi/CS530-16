@@ -1,14 +1,15 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html>
-   <head>
-      <script src = "https://maps.googleapis.com/maps/api/js"></script>
-      <script src="busschedule/utils.js"></script>
-	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    	<meta charset="utf-8">
-	    <Title>CTFastrack - TeamSpark</Title>
-		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-		<style>
+  <head>
+          <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+          <meta charset="utf-8">
+	      <Title>CTFastrack - TeamSpark - Iteration 1</Title>
+		  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		  <script type="text/javascript" src="index.js"></script>
+		  <link href="index.css" rel="stylesheet" type="text/css" />
+	
+ <style>
 ul {
     list-style-type: none;
     margin: 0;
@@ -29,17 +30,20 @@ li a {
 li a:hover {
     background-color: #111;
 }
-</style>   
+</style>
 <ul>
     <li class="active" ><a href="#"><font size="6">CTFastrack <i>- TeamSpark</i></font></a></li>
     <font size="5"><li><a href="#">Home</a></li>
-    <li><a href="busschedule/Bus-Schedule.html">Bus Schedule</a></li>
-    <li><a href="Trip-Planner.html">Trip Planner</a></li>
+    <li><a href="#">Bus Schedule</a></li>
+    <li><a href="#">Trip Planner</a></li>
     <li><a href="#">Contact us</a></li>
 	</font>
 	
   </ul>
- <br>
+
+  <br>
+
+	
     <style>
       #map {
         height: 90%;
@@ -54,11 +58,976 @@ li a:hover {
         margin: 0;
         padding: 0;
       }
-
-
     </style>
-	<body background="CTfastrak.jpg">
+  </head>
+  <body onload="initMap()">
+	
+	<div id="header">
+		<font face="Calibri" size=4> Source:  </font><font size=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>
+		<!--Modified Search window to be type as Search box type- This allows user to close the current search and get back to current location-->
+		<input type="search" id="source" size="50" placeholder="Search source address">
+		<a id="source-link" href="#">Get my position</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Locate my location on map" onclick="detectmylocation()">&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Show/Hide realtime bus positions" onclick="showhidebus()">
+		<br>
+		<font face="Calibri" size=4> Destination: </font> 
+		<input type="search" id="destination" size="50" placeholder="Search destination address">
+		<a id="destination-link" href="#">Get my position</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="button" value="Show route and get distance" onclick="getdistance()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<font size=5><span id="sDistance"></span>&nbsp;&nbsp;
+		<span id="sDuration"></span></font>
+	</div>
+    <div id="map"></div>
+    <script>
+	  var map, markerSource, markerDestination;
+	  var bluemarkers = []; /* Array of blue markers. We're indexing blue markers because we need to remove 
+							them in each new search before adding new ones */
+	function initMap() {
+		map = new google.maps.Map(document.getElementById('map'), {
+		  zoom: 14
+		});
+		
+	  //Logic to locate current location when loading page
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
 
-   </body>
+	// Code to locate nearby bus stops
+		nearbusstations(pos);
+		markerSource = new google.maps.Marker({
+		position: new google.maps.LatLng(pos),
+		map:map,
+		title: "Your current location!!! "	
+		
+	});
+	
+	var infoWindow = new google.maps.InfoWindow({map:map});
+        infoWindow.setPosition(pos);
+        infoWindow.setContent("Your current location!!!");
+        map.setCenter(pos);
+        }, function() {
+           handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation <!-- ?callback=initMap -->
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+		
+	// Initializaing realtime bus position updates
+		InitBus();
+			
+		
+		markerSource = new google.maps.Marker ({
+		   map:map
+		});
+		markerDestination = new google.maps.Marker ({
+		   map:map
+		});
+		var searchBox = new google.maps.places.SearchBox(document.getElementById('source'));
+		google.maps.event.addListener(searchBox, 'places_changed', function() {
+		     var places = searchBox.getPlaces();
+		     var bounds = new google.maps.LatLngBounds();
+		     var i, place;
+		     for (i=0; place=places[i];i++){
+		          bounds.extend(place.geometry.location);
+		          markerSource.setPosition(place.geometry.location);
+	    		  var searchedpos = {
+                               lat: place.geometry.location.lat(),
+                               lng: place.geometry.location.lng()
+                           };
+			nearbusstations(searchedpos);
+		     }
+		     map.fitBounds(bounds);
+		     map.setZoom(14);
+		});
+		var searchBox2 = new google.maps.places.SearchBox(document.getElementById('destination'));
+		google.maps.event.addListener(searchBox2, 'places_changed', function() {
+		     var places = searchBox2.getPlaces();
+		     var bounds = new google.maps.LatLngBounds();
+		     var i, place;
+		     for (i=0; place=places[i];i++){
+		          bounds.extend(place.geometry.location);
+		          markerDestination.setPosition(place.geometry.location);
+	    		  var searchedpos = {
+                               lat: place.geometry.location.lat(),
+                               lng: place.geometry.location.lng()
+                           };
+		     }
+		     map.fitBounds(bounds);
+		     map.setZoom(14);
+		});
+      }
+	  
+	   $("#source-link, #destination-link").click(function(event) {
+         event.preventDefault();
+        var addressId = this.id.substring(0, this.id.indexOf("-"));
+		  
+		   navigator.geolocation.getCurrentPosition(function(position) {
+            var geocoder = new google.maps.Geocoder();
+			
+            geocoder.geocode({
+              "location": new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+            },
+            function(results, status) {
+              if (status == google.maps.GeocoderStatus.OK)
+                $("#" + addressId).val(results[0].formatted_address);
+              else
+                $("#error").append("Unable to retrieve your address<br />");
+            });
+		
+},
+		  
+         function(positionError){
+           $("#error").append("Error: " + positionError.message + "<br />");
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10 * 1000 // 10 seconds
+          });
+        });
+		
+function nearbusstations(pos) {
+  removemarkers(); //removing old blue markers
+  var SearchLoc = new google.maps.LatLng(pos);
+  // Specify location, radius and place types for your Places API search.
+  var request = {
+    location: SearchLoc,
+    radius: '400',
+    types: ['bus_station']
+  };
+  var service = new google.maps.places.PlacesService(map);
+  service.nearbySearch(request, function(results, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      for (var i = 0; i < results.length; i++) {
+        var place = results[i];
+		var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+        var markerbus = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location,
+		  icon: image
+        });
+	    bluemarkers.push(markerbus); //adding marker to the array. to be able to delete them later in case of a new search.
+      }
+    }
+  });
+}
+function detectmylocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+		
+		var infoWindow = new google.maps.InfoWindow({map:map});	
+          infoWindow.close(); //Close the previous infoWindow	
+          infoWindow.setPosition(pos);
+          infoWindow.setContent('You location!');
+		  markerSource.setPosition(pos);
+          map.setCenter(pos);
+		  nearbusstations(pos);
+      }, function() {
+        handleLocationError(true, infoWindow, map.getCenter());
+      });
+    }
+  }
+function removemarkers(){
+	// removes all blue markers
+    for(i=0; i<bluemarkers.length; i++){
+        bluemarkers[i].setMap(null);
+    }
+}
+function getdistance() {
+  var sourceLat = markerSource.getPosition().lat();
+  var sourceLng = markerSource.getPosition().lng();
+  var posSource = new google.maps.LatLng(sourceLat, sourceLng); // Source LatLng 
+  var destinationLat = markerDestination.getPosition().lat();
+  var destinationLng = markerDestination.getPosition().lng();
+  var posDestination = new google.maps.LatLng(destinationLat, destinationLng);  // Destination LatLng
+  var iDistance = google.maps.geometry.spherical.computeDistanceBetween(posSource, posDestination); // Distance between Source and Destination
+  iDistance = Math.round(iDistance/1609.344 * 100.0)/100.0;
+  document.getElementById("sDistance").textContent=" Distance: "+iDistance + " miles"; // output distance to the page
+  getDuration(posSource, posDestination); // display travel time 
+  var directionsService = new google.maps.DirectionsService;
+  var directionsDisplay = new google.maps.DirectionsRenderer({ map: map });
+  calculateAndDisplayRoute(directionsService, directionsDisplay, posSource, posDestination); // display route
+}
+function getDuration(pointS, pointD) {
+   var directionsService = new google.maps.DirectionsService();
+   var request = {
+      origin: pointS,
+      destination: pointD,
+      travelMode: google.maps.DirectionsTravelMode.TRANSIT
+    };
+    directionsService.route( request, function( response, status ) {
+    if ( status === 'OK' ) {
+        document.getElementById("sDuration").textContent="Time: "+response.routes[ 0 ].legs[ 0 ].duration.text;
+    }
+   } );
+}
+function calculateAndDisplayRoute(directionsService, directionsDisplay, pointA, pointB) {
+  directionsService.route({
+    origin: pointA,
+    destination: pointB,
+    travelMode: google.maps.TravelMode.TRANSIT
+  }, function(response, status) {
+    if (status == google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    } else {
+      window.alert('Directions request failed due to ' + status);
+    }
+  });
+}
+
+function showhidebus()
+{
+	if (showbus == 1)
+	{
+		removebuspositions();
+		showbus = 0;
+	}
+	else
+	{
+		showbuspositions();
+		showbus = 1;
+	}
+}
+    </script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQYSlhHPO1qYoti9eS3MZ-xjW1TwnFAgg&libraries=places,geometry">
+    </script>
+	<!-- note: geometry library added. it is necessary for knowing the travel distance -->
+    <script src="markerwithlabel.js" type="text/javascript"></script>
+  </body>
+  /*
+
+Copyright (C) 2013 Michael Schnuerle <code@yourmapper.com> www.yourmapper.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*********
+Significant edits to change from web sockets to ajax, new data format,
+added popup infowindowXs, custom symbols for busses with color and orientation, 
+bus numbers on symbols, layer for stops, layer for routes, onclick show 
+colored layer for one bus, auto refreshing, iOS support.
+*********
+
+Intial version (C) and info:
+
+ * Copyright (C) 2012 Brian Ferris <bdferris@onebusaway.org>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+
+*/
+
+// Look for *** to know where to replace paths with full URL paths from your own server (required by google for KML overlays)
+ 
+	var marker;
+	var infowindowX;
+	var contentString='';
+	var firstTime = 1;
+ 
+	// var map;
+	var markersArray = [];
+	var ShapesLayer;
+	var StopsLayer;
+	var RouteLayer;
+
+	var showbus = 0;
+	
+	var i = 0;
+    var iOS;
+
+     if( navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ){ 
+         iOS = true; 
+         //alert('iOS will crash your browser app right now!')
+     }
+ 
+	function InitBus() {
+  
+	var hostandport = window.location.hostname + ':' + window.location.port;
+
+	// map = CreateMap();
+
+	/**
+	 * Create a custom-styled Google Map with no labels and custom color scheme.
+	 */
+	function CreateMap() {
+		var map_style = [ {
+			elementType : "labels",
+			stylers : [ {
+				visibility : "on"
+			} ]
+		}, {
+			stylers : [ {
+				saturation : -69
+			} ]
+		} ];
+		var map_canvas = document.getElementById("map_canvas");
+		var myOptions = {
+			// center : new google.maps.LatLng(38.1858635, -85.676193),
+			center : new google.maps.LatLng(41.763404, -72.681722),
+			zoom : 12,
+			styles : map_style,
+			mapTypeId : google.maps.MapTypeId.ROADMAP
+		};
+		 infowindowX = new google.maps.infowindowX({
+             content: 'holding...'
+         });
+        
+		return new google.maps.Map(map_canvas, myOptions);
+		
+		
+		
+	};
+	
+    
+    function RgbToHsv(r, g, b) {
+        var
+            min = Math.min(r, g, b),
+            max = Math.max(r, g, b),
+            delta = max - min,
+            h, s, v = max;
+
+        v = Math.floor(max / 255 * 100);
+        if ( max != 0 )
+            s = Math.floor(delta / max * 100);
+        else {
+            // black
+            return [0, 0, 0];
+        }
+
+        if( r == max )
+            h = ( g - b ) / delta;         // between yellow & magenta
+        else if( g == max )
+            h = 2 + ( b - r ) / delta;     // between cyan & yellow
+        else
+            h = 4 + ( r - g ) / delta;     // between magenta & cyan
+
+        h = Math.floor(h * 60);            // degrees
+        if( h < 0 ) h += 360;
+
+        return [h, s, v];
+    }
+    
+	/**
+	 * We want to assign a random color to each bus in our visualization. We
+	 * pick from the HSV color-space since it gives more natural colors.
+	 */
+	function HsvToRgb(h, s, v) {
+		h_int = parseInt(h * 6);
+		f = h * 6 - h_int;
+		var a = v * (1 - s);
+		var b = v * (1 - f * s);
+		var c = v * (1 - (1 - f) * s);
+		switch (h_int) {
+		case 0:
+			return [ v, c, a ];
+		case 1:
+			return [ b, v, a ];
+		case 2:
+			return [ a, v, c ];
+		case 3:
+			return [ a, b, v ];
+		case 4:
+			return [ c, a, v ];
+		case 5:
+			return [ v, a, b ];
+		}
+	};
+
+	function HsvToRgbString(h, s, v) {
+		var rgb = HsvToRgb(h, s, v);
+		for ( var i = 0; i < rgb.length; ++i) {
+			rgb[i] = parseInt(rgb[i] * 256)
+		}
+		return 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
+	};
+
+	var h = Math.random();
+	var golden_ratio_conjugate = 0.618033988749895;
+
+	function NextRandomColor() {
+		h = (h + golden_ratio_conjugate) % 1;
+		return HsvToRgbString(h, 0.90, 0.90)
+	};
+	
+	function ValueFromHash(str){
+		var hash = 0;
+		var hashVal = 0;
+		if (str.length == 0) return hash;
+		for (i = 0; i < str.length; i++) {
+			char = str.charCodeAt(i);
+			hash = ((hash<<5)-hash)+char;
+			hashVal = ((hash & hash) % 256)/256;
+		}
+		return hashVal;
+	}
+	
+	function AgencyIdColor(v_data) {
+		var agency = v_data.agency;
+		// *** CT var id = v_data.ID;
+		var id = v_data.vehicle.vehicle.id;
+		var hue = v_data.hue;
+		var rgbString;
+		if(hue != null){
+			rgbString = HsvToRgbString(hue+0.07*(Math.sin(Math.PI*ValueFromHash(id))-0.5), 1-(0.5*ValueFromHash(id)), Math.cos(ValueFromHash(id)*Math.PI/3)+0.4);
+		}else{
+			rgbString = HsvToRgbString(ValueFromHash(agency)+0.07*(Math.sin(Math.PI*ValueFromHash(id))-0.5), 1-(0.5*ValueFromHash(id)), Math.cos(ValueFromHash(id)*Math.PI/3)+0.4);
+		}
+		return rgbString;
+	}
+
+
+	var vehicles_by_uid = {};
+	var animation_steps = 1;
+
+
+    function showRoute(tripid,tripcolor) {
+		
+		return;
+		
+        if (typeof RouteLayer === 'undefined') {
+            //console.log('not defined');
+        } else {
+            //console.log('clear');
+            RouteLayer.setMap(null);
+        }
+        // *** needs to be a full URL to a dynamic KML route generator from your GTFS database. 3 sample route#.kml samples provided
+        var routeURL = 'http://www.yourserver.com/gtfsrealtime/route.php?trip='+tripid+'&color='+tripcolor+'&rand='+animation_steps;
+        
+        //animation_steps++;
+        //console.log(routeURL);
+        RouteLayer = new google.maps.KmlLayer({
+            url: routeURL,
+            clickable: false,
+            preserveViewport: true,
+            suppressinfowindowXs: false,
+            screenOverlays: false
+        });
+
+        RouteLayer.setMap(map);
+
+    }
+    
+    
+	function UpdateVehicleYM(v_data) {
+	    //console.log(v_data);
+	    //console.log(updates);
+	    //console.log(v_data.gtfs_realtime_version);
+
+        // *** CT var uid = v_data.ID;
+        var uid = v_data.vehicle.vehicle.id;
+
+            vehicles_by_uid[uid] = CreateVehicleYM(v_data);
+             var vehicle = vehicles_by_uid[uid];
+
+            // *** CT var op = CreateVehicleUpdateOperationYM(vehicle, v_data.Lat, v_data.Lon);
+			// .vehicle: Object .position: Object .latitude: 41.65468 .longitude: -72.85378
+            var op = CreateVehicleUpdateOperationYM(vehicle, v_data.vehicle.position.latitude, v_data.vehicle.position.longitude);
+                
+            //var cvym = CreateVehicleYM(v_data);
+            //console.log(vehicle.uid);
+
+            if (vehicle.uid != '0') {
+                //if (!iOS) {
+                    google.maps.event.addListener(vehicle.marker, 'click', function() {
+                        infowindowX.setContent(vehicle.contentinfo);
+                        //console.log("content: "+vehicle.contentinfo);
+                        infowindowX.open(map,this);
+
+                        // show route
+                        showRoute(vehicle.uid, vehicle.color);
+                    });
+                //}
+
+            }
+
+    };
+	
+	function RGBColor(color_string)
+    {
+        this.ok = false;
+
+        // strip any leading #
+        if (color_string.charAt(0) == '#') { // remove # if any
+            color_string = color_string.substr(1,6);
+        }
+
+        color_string = color_string.replace(/ /g,'');
+        color_string = color_string.toLowerCase();
+
+        
+        
+
+        // array of color definition objects
+        var color_defs = [
+            {
+                re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
+                example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
+                process: function (bits){
+                    return [
+                        parseInt(bits[1]),
+                        parseInt(bits[2]),
+                        parseInt(bits[3])
+                    ];
+                }
+            },
+            {
+                re: /^(\w{2})(\w{2})(\w{2})$/,
+                example: ['#00ff00', '336699'],
+                process: function (bits){
+                    return [
+                        parseInt(bits[1], 16),
+                        parseInt(bits[2], 16),
+                        parseInt(bits[3], 16)
+                    ];
+                }
+            },
+            {
+                re: /^(\w{1})(\w{1})(\w{1})$/,
+                example: ['#fb0', 'f0f'],
+                process: function (bits){
+                    return [
+                        parseInt(bits[1] + bits[1], 16),
+                        parseInt(bits[2] + bits[2], 16),
+                        parseInt(bits[3] + bits[3], 16)
+                    ];
+                }
+            }
+        ];
+
+        // search through the definitions to find a match
+        for (var i = 0; i < color_defs.length; i++) {
+            var re = color_defs[i].re;
+            var processor = color_defs[i].process;
+            var bits = re.exec(color_string);
+            if (bits) {
+                channels = processor(bits);
+                this.r = channels[0];
+                this.g = channels[1];
+                this.b = channels[2];
+                this.ok = true;
+            }
+
+        }
+
+        // validate/cleanup values
+        this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
+        this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
+        this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
+
+        // some getters
+        this.toRGB = function () {
+            return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
+        }
+        this.toHex = function () {
+            var r = this.r.toString(16);
+            var g = this.g.toString(16);
+            var b = this.b.toString(16);
+            if (r.length == 1) r = '0' + r;
+            if (g.length == 1) g = '0' + g;
+            if (b.length == 1) b = '0' + b;
+            return '#' + r + g + b;
+        }
+
+        // help
+        this.getHelpXML = function () {
+
+            var examples = new Array();
+            // add regexps
+            for (var i = 0; i < color_defs.length; i++) {
+                var example = color_defs[i].example;
+                for (var j = 0; j < example.length; j++) {
+                    examples[examples.length] = example[j];
+                }
+            }
+            // add type-in colors
+            for (var sc in simple_colors) {
+                examples[examples.length] = sc;
+            }
+
+            var xml = document.createElement('ul');
+            xml.setAttribute('id', 'rgbcolor-examples');
+            for (var i = 0; i < examples.length; i++) {
+                try {
+                    var list_item = document.createElement('li');
+                    var list_color = new RGBColor(examples[i]);
+                    var example_div = document.createElement('div');
+                    example_div.style.cssText =
+                            'margin: 3px; '
+                            + 'border: 1px solid black; '
+                            + 'background:' + list_color.toHex() + '; '
+                            + 'color:' + list_color.toHex()
+                    ;
+                    example_div.appendChild(document.createTextNode('test'));
+                    var list_item_value = document.createTextNode(
+                        ' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
+                    );
+                    list_item.appendChild(example_div);
+                    list_item.appendChild(list_item_value);
+                    xml.appendChild(list_item);
+
+                } catch(e){}
+            }
+            return xml;
+
+        }
+
+    }
+	
+	function calcBrightness(color) {
+            return Math.sqrt(
+               color.r * color.r * .299 +
+               color.g * color.g * .587 +
+               color.b * color.b * .114);          
+          }
+          
+    function CreateVehicleYM(v_data) {
+        //console.log(v_data);
+        //console.log(v_data.Point);
+        //console.log("CreateVehicle lat value: "+v_data.Lat+" Desc: "+v_data.Trip);
+		// *** CT var point = new google.maps.LatLng(v_data.Lat, v_data.Lon);
+		var point = new google.maps.LatLng(v_data.vehicle.position.latitude, v_data.vehicle.position.longitude);
+		var path = new google.maps.MVCArray();
+		path.push(point);
+		
+		/* 
+		//detect brightness of route color
+        var rgbcolor = new RGBColor(v_data.Color);
+                  if (rgbcolor.ok) { // 'ok' is true when the parsing was a success
+                    var brightness = calcBrightness(rgbcolor);
+                    var foreColor = (brightness < 130) ? "labelsWhite" : "labels";
+                }
+		*/
+		// *** CT var delay = v_data.Delay;
+		var delay = 0;
+		if ((delay == 0) || (delay == '')) {
+		    delay = '';
+		} else {
+		    delay = "("+v_data.Delay+" min delay)";
+		}
+		// *** CT contentString = "<b>"+v_data.Line+" "+v_data.Name+"</b><br><hr style='height:4px;border:none;color:#"+v_data.Color+";background-color:#"+v_data.Color+";' /><i>Route</i>: "+v_data.Route+"<br><i>Next Stop</i>: "+v_data.Stop+"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; at "+v_data.Time+" "+delay+"<br><i>Updated</i>: "+v_data.Date+" "+v_data.Time+" ("+v_data.Ago+" mins ago)<div style='text-align: center; width:100%; margin-top:6px;'><a href='http://www.yourmapper.com/crimescore' target='crimescore'><img src='http://static.yourmapper.com/crimescore/CrimeScoreLogo24.png' style='width:63px;height:24px;vertical-align:middle;margin-right:6px; margin-bottom:4px;' align='ablsmiddle' border='0' title='CrimeScore at current bus location - Click for more details' /></a> <span style='font-weight: bold; font-size:20px; color:#"+v_data.CrimeColor+"; text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;'>"+v_data.CrimeGrade+"</span></div>";
+		contentString = "";
+		
+		// *** CT
+		v_data.Line = v_data.vehicle.trip.route_id;
+		
+		if (v_data.Line != '') {
+		// marker 'M 16,0 C 16,0 0,24 0,33 C 0,42 7,49 16,49 C 25,49 32,42 32,33 C 32,24 16,0 16,0'
+		// needle M-30 -2.5L-25 2.5L-20 -2.5L-20 -15L-25 -70L-30 -15z
+		// star M 250,75 L 323,301 131,161 369,161 177,301 z
+		// double circle M 600,81 A 107,107 0 0,1 600,295 A 107,107 0 0,1 600,81 z M 600,139 A 49,49 0 0,1 600,237 A 49,49 0 0,1 600,139 z
+		// arrow head M 0,0  l -15,-5  +5,+5  -5,+5  +15,-5 z
+		// arrow M 10,0  l +15,+5  -5,-5  +5,-5  -15,+5  m +10,0 +10,0
+		// arrow point M -6,0  l +10,+5  -2,-5  +2,-5  -10,+5 m 8,0 2,0
+		// circle arrow M 50 5 A 45 45, 0, 1, 0, 95 50 L 95 5 Z 
+		// circle arrow with crosshair M 50 5 A 45 45, 0, 1, 0, 95 50 L 95 5 Z M 0 50 L 100 50 M 50 0 L 50 100
+		
+		//var bearing_arr = { 0: { x: -6, y: 8}, 45: { x: -2, y: -1}, 90: { x: 8, y: -7}, 135: { x: 18, y: -2}, 180: { x: 22, y: 8}, 225: { x: 18, y: 17}, 270: { x: 8, y: 23}, 315: { x: -2, y: 18}, 360: { x: -6, y: 8} };
+		//var bearnum = (Math.round((parseInt(v_data.Bear)+22.5)/45)-1)*45;
+		
+		//console.log(bearnum);
+		//console.log(v_data.Bear+ " " + v_data.Bear+22.5+ " " + (v_data.Bear+22.5)/45 + " " + bearnum+ " " + bearing_arr[bearnum]['x']+","+ bearing_arr[bearnum]['y']);
+		
+		// v_data.Bear - 45
+		
+	
+			var marker_opts = {
+				clickable : true,
+				draggable : false,
+				flat : false,
+				icon : {
+					// *** CT path: 'M 50 5 A 45 45, 0, 1, 0, 95 50 L 95 5 Z' 
+					path: "M41.162 25h-32.02c-.933 0-1.701-.802-1.701-1.714 0-.152.028-.324.059-.462l1.704-11.899c.145-.773.841-.925 1.674-.925h28.553c.827 0 1.529.139 1.672.909l1.704 12.116c.026.141.06.224.06.376-.001.912-.773 1.599-1.705 1.599zm-1.281 13.345c-1.803 0-3.265-1.419-3.265-3.188 0-1.757 1.462-3.174 3.265-3.174 1.791 0 3.256 1.417 3.256 3.174 0 1.769-1.465 3.188-3.256 3.188zm-29.501 0c-1.79 0-3.253-1.419-3.253-3.188 0-1.757 1.463-3.174 3.253-3.174 1.808 0 3.268 1.417 3.268 3.174 0 1.769-1.46 3.188-3.268 3.188zm5.62-35.345h20v3h-20c-2 0-2-3 0-3zm28.202 4.59c-.584-2.813-2.29-3.946-5.073-5.078-2.778-1.128-9.216-2.48-14.058-2.48-4.863 0-11.334 1.353-14.115 2.48-2.782 1.133-4.46 2.265-5.039 5.078l-1.917 15.659v21.751h3v2c0 4 5 4 5 0v-2h25v2c0 4 6 4 6 0v-2h3v-21.751l-1.798-15.659z",
+					scale: .5,
+					strokeColor: "white",
+					strokeWeight:.5,
+					// *** CT strokeOpacity: .7,
+					// *** CT fillColor: v_data.Color,
+					fillColor: "green",
+					fillOpacity: 0.8,
+					// *** CT rotation: v_data.Bear - 45,
+					// *** CT anchor: new google.maps.Point(50,50),
+					// *** CT origin: new google.maps.Point(50,50)
+					anchor: new google.maps.Point(20,20),
+					origin: new google.maps.Point(20,20)
+				},
+				// *** CT title : v_data.Line+" "+v_data.Name,
+				title : v_data.vehicle.vehicle.label,
+				map : map,
+				position : point,
+				// *** CT labelContent: v_data.Line,
+				labelContent: v_data.vehicle.vehicle.label,
+				// *** labelAnchor: new google.maps.Point(8,8),
+				labelClass: "labels", // the CSS class for the label
+				labelStyle: {opacity: 0.90},
+				labelAnchor: new google.maps.Point(11, 22),
+				labelInBackground: false
+			};
    
-</html>
+    
+			var polyline_opts = {
+				clickable : true,
+				editable : false,
+				map : map,
+				path : path,
+				strokeColor : 663333,
+				strokeOpacity : 0.5,
+				strokeWeight : 3
+			};
+		
+      
+            var newmarker = new MarkerWithLabel(marker_opts);
+    		markersArray.push(newmarker);
+            return {
+                // *** CT uid : v_data.Trip,
+                uid : v_data.vehicle.vehicle.id,
+                marker : newmarker,
+                //marker : new google.maps.Marker(marker_opts),
+                //polyline : new google.maps.Polyline(polyline_opts),
+                path : path, 
+                contentinfo: contentString,
+                color: v_data.Color
+                //lastUpdate : v_data.lastUpdate
+            };
+
+	    } else {
+	        return {
+    			uid : '0'
+    		};
+	    }
+	};
+
+	function CreateVehicleUpdateOperationYM(vehicle, lat, lon) {
+		return function() {
+			var point = new google.maps.LatLng(lat, lon);
+			vehicle.marker.setPosition(point);
+			
+			var path = vehicle.path;
+			var index = path.getLength() - 1;
+			path.setAt(index, point);
+			
+		};
+	};
+	var first_update = true;
+
+    
+
+	function ProcessVehicleData(data) {
+	    //console.log("Processing Locations...");
+	    //console.log(data);
+		//var vehicles = jQuery.parseJSON(data);
+		//console.log(vehicles);
+		//var updates = [];
+		var bounds = new google.maps.LatLngBounds();
+		//for ( var i = 0; i < animation_steps; ++i) {
+		//	updates.push(new Array());
+		//}
+		
+		var vehiclecount=1;
+		if (iOS) {
+		    var maxvehicles = 70;
+		} else {
+		    var maxvehicles = 300;
+		}
+	    /* // for sorting by most recently updated if JSON doesn't come back that way
+	    data.sort(function(a, b){
+            var keyA = a.Ago;
+            var keyB = b.Ago;
+            // Compare the 2 dates
+            console.log(keyA);
+            if(keyA < keyB) return -1;
+            if(keyA > keyB) return 1;
+            return 0;
+        });
+        */
+		jQuery.each(data, function() {
+		     //var exists = (typeof this.gtfs_realtime_version != "undefined");
+        	    //console.log(vehiclecount+ " "+this.Ago);
+        	    //if(exists){
+        	        //console.log("skipping first record");
+        	    //} else{
+        	if (vehiclecount <= maxvehicles) {
+        	    UpdateVehicleYM(this);
+		    }
+		    vehiclecount++;
+			//console.log(this);
+			//bounds.extend(new google.maps.LatLng(this.vehicle.position.longitude, this.vehicle.position.longitude));
+		    //}
+		});
+		if (first_update && ! bounds.isEmpty()) {
+			map.fitBounds(bounds);
+			first_update = false;
+		}
+			
+	};
+
+    function clearOverlays() {
+      //console.log('clearing...');
+      for (var i = 0; i < markersArray.length; i++ ) {
+          //console.log(i);
+          markersArray[i].setMap(null);
+      }
+      markersArray.length = 0;
+      markersArray = [];
+      //console.log('... done');
+    }
+
+    //var jsonURL = "dataOriginal.json";
+    //var jsonURL = "data.json";
+    //var jsonURL = "json.php"; // realtime from bret
+    //var jsonURL = "jsonPB.php"; // realtime from TARC
+    //var jsonURL = "ymdata.php"; // realtime from your mapper database
+    
+    var jsonURL = "http://65.213.12.244/realtimefeed/vehicle/vehiclepositions.json"; // *** static file - you need to make this dynamic from your server
+    // If you want to use our dynamic real-time JSON feed, please register at YourMapper.com and contact us
+    
+    function getRealtimeLocations() {
+        $.getJSON( jsonURL, function( data ) {
+            if (!firstTime) {
+                //console.log('cleared');
+                clearOverlays();
+            }
+            firstTime = 0;
+            // //document.getElementById('counter').style.visibility = 'visible'; 
+            // //if (!iOS){
+                
+                // if (document.getElementById) { // DOM3 = IE5, NS6 
+                    // document.getElementById('counter').style.visibility = 'visible'; 
+                    // document.getElementById('routes').style.visibility = 'visible'; 
+                    // document.getElementById('stops').style.visibility = 'visible'; 
+                // } 
+                // else { 
+                    // if (document.layers) { // Netscape 4 
+                        // document.counter.visibility = 'visible'; 
+                        // document.routes.visibility = 'visible'; 
+                        // document.stops.visibility = 'visible'; 
+                    // } 
+                    // else { // IE 4 
+                        // document.all.counter.style.visibility = 'visible'; 
+                        // document.all.routes.style.visibility = 'visible'; 
+                        // document.all.stops.style.visibility = 'visible'; 
+                    // } 
+                // }
+            // //}
+            //console.log("processing...");
+			data = data.entity; // *** FOR CT Transit
+            ProcessVehicleData(data);
+            //if (!iOS){
+                
+                countdown();
+            
+            //}
+        });
+    }
+
+	var v_timeout = null;
+	
+    function countdown() {
+        var seconds = 30;
+		if (!showbus && !v_timeout) clearTimeout(v_timeout);
+        function tick() {
+			if (!showbus) return;
+            seconds--;
+            if( seconds > 0 ) {
+                v_timeout = setTimeout(tick, 1000);
+            } else {
+                getRealtimeLocations();
+            }
+        }
+        tick();
+    }
+    
+    
+    if (showbus) getRealtimeLocations();
+	else clearOverlays();
+    
+    //if (!iOS) {
+
+        // pre-generated KMZ file of shapes from GTFS feed
+        // *** needs to be full URL from your server - sample provided here
+        // ShapesLayer = new google.maps.KmlLayer({
+            // url: 'http://50.21.180.38/TeamSpark//shapes.kmz',
+            // clickable: false,
+            // preserveViewport: true,
+            // suppressinfowindowXs: true,
+            // screenOverlays: false
+        // });
+        
+        // pre-generated KMZ file of stops from GTFS feed
+        // *** needs to be full URL from your server - sample provided here
+        // StopsLayer = new google.maps.KmlLayer({
+            // url: 'http://50.21.180.38/TeamSpark/stops.kmz',
+            // clickable: true,
+            // preserveViewport: true,
+            // suppressinfowindowXs: false,
+            // screenOverlays: false
+        // });
+
+    //}
+
+}
+
+function toggleShapes() { 
+    if (!document.getElementById('ShapesLayer').checked)  {
+        //console.log("remove");
+        ShapesLayer.setMap(null); 
+    } else { 
+        //console.log("show");
+        
+        ShapesLayer.setMap(map); 
+    }
+}
+
+function toggleStops() { 
+    if (!document.getElementById('StopsLayer').checked)  {
+        //console.log("remove");
+        StopsLayer.setMap(null); 
+    } else { 
+        //console.log("show");
+
+        StopsLayer.setMap(map); 
+    }
+} 
+
+function showbuspositions()
+{
+	showbus = 1;
+	InitBus();
+}
+
+function removebuspositions()
+{
+	showbus = 0;
+	InitBus();
+}
+
+eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('7 1G(b,a){7 1u(){};1u.v=a.v;b.2B=a.v;b.v=1b 1u();b.v.3h=b}7 u(c,b,a){2.3=c;2.1L=c.2y;2.6=K.1A("2k");2.6.4.S="Z: 1p; 15: 1P;";2.q=K.1A("2k");2.q.4.S=2.6.4.S;2.q.1M("2A","1d A;");2.q.1M("2w","1d A;");2.U=u.P(b)}1G(u,8.5.3g);u.P=7(b){t a;9(C u.P.1j==="B"){a=K.1A("30");a.4.S="Z: 1p; z-2Y: 2W; M: 13;";a.4.1l="-2P";a.4.1x="-2M";a.2I=b;u.P.1j=a}1d u.P.1j};u.v.2D=7(){t g=2;t m=A;t c=A;t f;t j,1e;t p;t d;t h;t o;t n=20;t i="3p("+2.1L+")";t k=7(e){9(e.2q){e.2q()}e.3l=G;9(e.2n){e.2n()}};t l=7(){g.3.2m(3c)};2.1E().1J.X(2.6);2.1E().36.X(2.q);9(C u.P.2e==="B"){2.1E().1J.X(2.U);u.P.2e=G}2.1t=[8.5.r.O(2.q,"2c",7(e){9(g.3.R()||g.3.W()){2.4.19="25";8.5.r.D(g.3,"2c",e)}}),8.5.r.O(2.q,"21",7(e){9((g.3.R()||g.3.W())&&!c){2.4.19=g.3.2V();8.5.r.D(g.3,"21",e)}}),8.5.r.O(2.q,"1X",7(e){c=A;9(g.3.R()){m=G;2.4.19=i}9(g.3.R()||g.3.W()){8.5.r.D(g.3,"1X",e);k(e)}}),8.5.r.O(K,"1s",7(a){t b;9(m){m=A;g.q.4.19="25";8.5.r.D(g.3,"1s",a)}9(c){9(d){b=g.Y().1v(g.3.Q());b.y+=n;g.3.J(g.Y().1S(b));2O{g.3.2m(8.5.2N.2L);2J(l,2H)}2E(e){}}g.U.4.M="13";g.3.11(f);p=G;c=A;a.L=g.3.Q();8.5.r.D(g.3,"1N",a)}}),8.5.r.w(g.3.1g(),"2C",7(a){t b;9(m){9(c){a.L=1b 8.5.2z(a.L.1f()-j,a.L.1i()-1e);b=g.Y().1v(a.L);9(d){g.U.4.14=b.x+"H";g.U.4.T=b.y+"H";g.U.4.M="";b.y-=n}g.3.J(g.Y().1S(b));9(d){g.q.4.T=(b.y+n)+"H"}8.5.r.D(g.3,"1K",a)}V{j=a.L.1f()-g.3.Q().1f();1e=a.L.1i()-g.3.Q().1i();f=g.3.1c();h=g.3.Q();o=g.3.1g().2x();d=g.3.F("16");c=G;g.3.11(1I);a.L=g.3.Q();8.5.r.D(g.3,"1H",a)}}}),8.5.r.O(K,"2v",7(e){9(c){9(e.3r===27){d=A;g.3.J(h);g.3.1g().3q(o);8.5.r.D(K,"1s",e)}}}),8.5.r.O(2.q,"2u",7(e){9(g.3.R()||g.3.W()){9(p){p=A}V{8.5.r.D(g.3,"2u",e);k(e)}}}),8.5.r.O(2.q,"2s",7(e){9(g.3.R()||g.3.W()){8.5.r.D(g.3,"2s",e);k(e)}}),8.5.r.w(2.3,"1H",7(a){9(!c){d=2.F("16")}}),8.5.r.w(2.3,"1K",7(a){9(!c){9(d){g.J(n);g.6.4.N=1I+(2.F("17")?-1:+1)}}}),8.5.r.w(2.3,"1N",7(a){9(!c){9(d){g.J(0)}}}),8.5.r.w(2.3,"3o",7(){g.J()}),8.5.r.w(2.3,"3n",7(){g.11()}),8.5.r.w(2.3,"3m",7(){g.18()}),8.5.r.w(2.3,"3j",7(){g.18()}),8.5.r.w(2.3,"3i",7(){g.1C()}),8.5.r.w(2.3,"3f",7(){g.1y()}),8.5.r.w(2.3,"3e",7(){g.1z()}),8.5.r.w(2.3,"3d",7(){g.1a()}),8.5.r.w(2.3,"3b",7(){g.1a()})]};u.v.3a=7(){t i;2.6.2j.2i(2.6);2.q.2j.2i(2.q);2h(i=0;i<2.1t.39;i++){8.5.r.38(2.1t[i])}};u.v.37=7(){2.1y();2.1C();2.1a()};u.v.1y=7(){t a=2.3.F("1w");9(C a.35==="B"){2.6.12=a;2.q.12=2.6.12}V{2.6.12="";2.6.X(a);a=a.34(G);2.q.X(a)}};u.v.1C=7(){2.q.33=2.3.32()||""};u.v.1a=7(){t i,E;2.6.1r=2.3.F("1q");2.q.1r=2.6.1r;2.6.4.S="";2.q.4.S="";E=2.3.F("E");2h(i 31 E){9(E.2Z(i)){2.6.4[i]=E[i];2.q.4[i]=E[i]}}2.2b()};u.v.2b=7(){2.6.4.Z="1p";2.6.4.15="1P";9(C 2.6.4.I!=="B"&&2.6.4.I!==""){2.6.4.2a="\\"29:28.26.2f(I="+(2.6.4.I*24)+")\\"";2.6.4.23="22(I="+(2.6.4.I*24)+")"}2.q.4.Z=2.6.4.Z;2.q.4.15=2.6.4.15;2.q.4.I=0.2X;2.q.4.2a="\\"29:28.26.2f(I=1)\\"";2.q.4.23="22(I=1)";2.1z();2.J();2.18()};u.v.1z=7(){t a=2.3.F("1o");2.6.4.1l=-a.x+"H";2.6.4.1x=-a.y+"H";2.q.4.1l=-a.x+"H";2.q.4.1x=-a.y+"H"};u.v.J=7(a){t b=2.Y().1v(2.3.Q());9(C a==="B"){a=0}2.6.4.14=1Z.1Y(b.x)+"H";2.6.4.T=1Z.1Y(b.y-a)+"H";2.q.4.14=2.6.4.14;2.q.4.T=2.6.4.T;2.11()};u.v.11=7(){t a=(2.3.F("17")?-1:+1);9(C 2.3.1c()==="B"){2.6.4.N=2U(2.6.4.T,10)+a;2.q.4.N=2.6.4.N}V{2.6.4.N=2.3.1c()+a;2.q.4.N=2.6.4.N}};u.v.18=7(){9(2.3.F("1n")){2.6.4.M=2.3.2T()?"2S":"13"}V{2.6.4.M="13"}2.q.4.M=2.6.4.M};7 1m(a){a=a||{};a.1w=a.1w||"";a.1o=a.1o||1b 8.5.2R(0,0);a.1q=a.1q||"2Q";a.E=a.E||{};a.17=a.17||A;9(C a.1n==="B"){a.1n=G}9(C a.16==="B"){a.16=G}9(C a.2d==="B"){a.2d=G}9(C a.1W==="B"){a.1W=A}9(C a.1B==="B"){a.1B=A}a.1k=a.1k||"1V"+(K.1U.1T==="2g:"?"s":"")+"://5.1R.1Q/2t/2l/2o/2K.3k";a.1F=a.1F||"1V"+(K.1U.1T==="2g:"?"s":"")+"://5.1R.1Q/2t/2l/2o/2G.2F";a.1B=A;2.2p=1b u(2,a.1k,a.1F);8.5.1D.1O(2,2r)}1G(1m,8.5.1D);1m.v.1h=7(a){8.5.1D.v.1h.1O(2,2r);2.2p.1h(a)};',62,214,'||this|marker_|style|maps|labelDiv_|function|google|if|||||||||||||||||eventDiv_|event||var|MarkerLabel_|prototype|addListener||||false|undefined|typeof|trigger|labelStyle|get|true|px|opacity|setPosition|document|latLng|display|zIndex|addDomListener|getSharedCross|getPosition|getDraggable|cssText|top|crossDiv_|else|getClickable|appendChild|getProjection|position||setZIndex|innerHTML|none|left|overflow|raiseOnDrag|labelInBackground|setVisible|cursor|setStyles|new|getZIndex|return|cLngOffset|lat|getMap|setMap|lng|crossDiv|crossImage|marginLeft|MarkerWithLabel|labelVisible|labelAnchor|absolute|labelClass|className|mouseup|listeners_|tempCtor|fromLatLngToDivPixel|labelContent|marginTop|setContent|setAnchor|createElement|optimized|setTitle|Marker|getPanes|handCursor|inherits|dragstart|1000000|overlayImage|drag|handCursorURL_|setAttribute|dragend|apply|hidden|com|gstatic|fromDivPixelToLatLng|protocol|location|http|draggable|mousedown|round|Math||mouseout|alpha|filter|100|pointer|Microsoft||DXImageTransform|progid|MsFilter|setMandatoryStyles|mouseover|clickable|processed|Alpha|https|for|removeChild|parentNode|div|en_us|setAnimation|stopPropagation|mapfiles|label|preventDefault|arguments|dblclick|intl|click|keydown|ondragstart|getCenter|handCursorURL|LatLng|onselectstart|superClass_|mousemove|onAdd|catch|cur|closedhand_8_8|1406|src|setTimeout|drag_cross_67_16|BOUNCE|9px|Animation|try|8px|markerLabels|Point|block|getVisible|parseInt|getCursor|1000002|01|index|hasOwnProperty|img|in|getTitle|title|cloneNode|nodeType|overlayMouseTarget|draw|removeListener|length|onRemove|labelstyle_changed|null|labelclass_changed|labelanchor_changed|labelcontent_changed|OverlayView|constructor|title_changed|labelvisible_changed|png|cancelBubble|visible_changed|zindex_changed|position_changed|url|setCenter|keyCode'.split('|'),0,{}))
