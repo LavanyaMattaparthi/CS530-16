@@ -222,22 +222,19 @@ function setMapOnAll(map) {
 		<span id="sDuration"></span></font>
 
 	</div>
-    <div id="map"></div>
-    <script>
-	  var map, markerSource, markerDestination;
+      <div id = "sample" style = "position:absolute;width:100%; height:80%;"></div>
+<script>
+	  var map, markerSource, markerDestination, busstopname;
 	  var bluemarkers = []; /* Array of blue markers. We're indexing blue markers because we need to remove 
 							them in each new search before adding new ones */
 	  var directionsDisplay;
       function initMap() {
-	    map = new google.maps.Map(document.getElementById('map'), {
-	      zoom: 14
-	    });
-
+	  //  map = new google.maps.Map(document.getElementById('map'), {
+	  //    zoom: 14
+	  //  });
 	    geocoder = new google.maps.Geocoder();
-
 	    directionsDisplay = new google.maps.DirectionsRenderer();
 	    directionsService = new google.maps.DirectionsService();
-
           //Define CTFastrak boundary
 	    polygonCoords = [
                           { lat: 41.806523, lng: -72.751854 },
@@ -250,15 +247,13 @@ function setMapOnAll(map) {
 	    ];
 	    fastrakPolygon = new google.maps.Polygon({ paths: polygonCoords });
 	    google.maps.event.addListener(map, 'click', function (event) { console.log(google.maps.geometry.poly.containsLocation(event.latLng, fastrakPolygon)); });
-
           //Load CTFastrak routes, parking, and multi-use trail access points
 	    ctfastrak = new google.maps.KmlLayer({
 	        map: map,
-	        url: 'https://drive.google.com/uc?export=download&id=0BzSh5RLL0GhUcm0tbnYzcTI4c0U',
+	        url: 'https://docs.google.com/uc?export=download&id=0B0tnbc_5lVfSWlJjV3RnTk91T28',
 	        preserveViewport: true,
 	        suppressInfoWindows: true
-	    });
-          
+	    }); 
           //Display CTFastrak KML attributes in 'content-window' div
 	    ctfastrak.addListener('click', function (kmlEvent) {
 		var RouteClicked =  kmlEvent.featureData.name.substring(9, 6);
